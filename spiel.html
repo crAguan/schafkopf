@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schafkopf Analyse Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            background-color: #171717;
+            color: white;
+            user-select: none;
+            overflow: hidden;
+            height: 100vh;
+            font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+        }
+        .card-slot {
+            transition: all 0.2s ease;
+        }
+        .card-slot:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #404040;
+            border-radius: 10px;
+        }
+        /* Kompaktes Kreuz-Layout für die Arena */
+        .arena-grid {
+            display: grid;
+            grid-template-areas: 
+                ". north ."
+                "west center east"
+                ". south .";
+            grid-template-columns: minmax(100px, 1fr) auto minmax(100px, 1fr);
+            grid-template-rows: auto auto auto;
+            gap: 4px; /* Engeres Zusammenrücken */
+        }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="p-4 flex flex-col gap-4">
+
+    <!-- Main Grid - Oben 80px, Mitte flexibel -->
+    <div class="flex-1 grid grid-cols-[210px_1fr_210px] grid-rows-[80px_1fr] gap-4 relative min-h-0" id="main-grid">
+        
+        <!-- Punktestand Gegner -->
+        <div class="col-start-1 row-start-1 flex items-end justify-end pb-2">
+            <div class="bg-red-900/40 border border-red-500/50 rounded-lg p-2 flex items-center gap-2">
+                <span class="text-[10px] font-bold uppercase text-red-400">Gegner</span>
+                <input type="number" value="0" id="score-opponent" class="bg-transparent border-b border-red-500/50 w-10 text-center text-xl font-bold focus:outline-none focus:border-red-400 cursor-ns-resize" title="Scrollen zum Ändern" />
+            </div>
+        </div>
+
+        <!-- Punktestand Spieler -->
+        <div class="col-start-3 row-start-1 flex items-end justify-start pb-2">
+            <div class="bg-green-900/40 border border-green-500/50 rounded-lg p-2 flex items-center gap-2">
+                <span class="text-[10px] font-bold uppercase text-green-400">Spieler</span>
+                <input type="number" value="0" id="score-player" class="bg-transparent border-b border-green-500/50 w-10 text-center text-xl font-bold focus:outline-none focus:border-green-400 cursor-ns-resize" title="Scrollen zum Ändern" />
+            </div>
+        </div>
+
+        <!-- Central Arena Area -->
+        <div class="col-start-2 row-start-2 flex flex-col gap-4 min-h-0">
+            <!-- Spiel-Arena: Zentriert und kompakt -->
+            <div class="flex-1 bg-neutral-900/50 rounded-3xl border-4 border-neutral-800 shadow-2xl relative flex items-center justify-center p-4">
+                <div class="arena-grid">
+                    <!-- Norden -->
+                    <div style="grid-area: north" id="arena-north" class="card-slot border-2 border-white/10 border-dashed rounded-xl w-24 h-32 justify-self-center flex items-center justify-center relative"></div>
+                    
+                    <!-- Westen -->
+                    <div style="grid-area: west" id="arena-west" class="card-slot border-2 border-white/10 border-dashed rounded-xl w-24 h-32 self-center justify-self-end flex items-center justify-center relative"></div>
+                    
+                    <!-- Zentrum: Stich einsammeln -->
+                    <div style="grid-area: center" class="self-center flex flex-col items-center justify-center px-4">
+                        <button onclick="collectTrick()" class="bg-white/10 hover:bg-white/20 border border-white/20 p-4 rounded-full transition-all group active:scale-95 shadow-xl" title="Stich einsammeln">
+                            <i data-lucide="arrow-down-to-dot" class="w-8 h-8 text-blue-400 group-hover:scale-110 transition-transform"></i>
+                        </button>
+                        <div class="text-[9px] uppercase font-bold text-white/30 mt-1">Stich</div>
+                    </div>
+
+                    <!-- Osten -->
+                    <div style="grid-area: east" id="arena-east" class="card-slot border-2 border-white/10 border-dashed rounded-xl w-24 h-32 self-center justify-self-start flex items-center justify-center relative"></div>
+                    
+                    <!-- Süden -->
+                    <div style="grid-area: south" id="arena-south" class="card-slot border-2 border-white/10 border-dashed rounded-xl w-24 h-32 justify-self-center flex items-center justify-center relative"></div>
+                </div>
+            </div>
+
+            <!-- Handkarten Bereich: Höher gestaltet -->
+            <div class="bg-neutral-800/30 border border-white/10 rounded-2xl p-6 flex justify-center gap-3 shrink-0">
+                <div id="hand-cards" class="flex gap-2 min-h-[140px] items-center">
+                    <!-- Platzhalter für 8 Karten -->
+                    <div id="hand-slot-1" class="card-slot border-2 border-white/5 border-dashed rounded-lg w-20 h-28 flex items-center justify-center relative"></div>
+                    <div id="hand-slot-2" class="card-slot border-2 border-white/5 border-dashed rounded-lg w-20 h-28 flex items-center justify-center relative"></div>
+                    <div id="hand-slot-3" class="card-slot border-2 border-white/5 border-dashed rounded-lg w-20 h-28 flex items-center justify-center relative"></div>
+                    <div id="hand-slot-4" class="card-slot border-2 border-white/5 border-dashed rounded-lg w-20 h-28 flex items-center justify-center relative"></div>
+                    <div id="hand-slot-5" class="card-slot border-2 border-white/5 border-dashed rounded-lg w-20 h-28 flex items-center justify-center relative"></div>
+                    <div id="hand-slot-6" class="card-slot border-2 border-white/5 border-dashed rounded-lg w-20 h-28 flex items-center justify-center relative"></div>
+                    <div id="hand-slot-7" class="card-slot border-2 border-white/5 border-dashed rounded-lg w-20 h-28 flex items-center justify-center relative"></div>
+                    <div id="hand-slot-8" class="card-slot border-2 border-white/5 border-dashed rounded-lg w-20 h-28 flex items-center justify-center relative"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stich-Bereiche: Kleiner gestaltet -->
+    <div class="grid grid-cols-4 grid-rows-2 gap-2 h-36 shrink-0 overflow-y-auto custom-scroll p-1" id="tricks-grid">
+        <!-- Wird per JS befüllt -->
+    </div>
+
+    <script>
+        const IMAGES = {
+            "Eichel": 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Bay_eichel.svg/60px-Bay_eichel.svg.png',
+            "Gras": 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Bay_gras.svg/66px-Bay_gras.svg.png',
+            "Herz": 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Bay_herz.svg/64px-Bay_herz.svg.png',
+            "Schellen": 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Bay_schellen.svg/70px-Bay_schellen.svg.png'
+        };
+
+        const cardOptions = (() => {
+            const farben = ["Eichel", "Gras", "Herz", "Schellen"];
+            let opts = [];
+            farben.forEach(f => opts.push({ type: 'kombi', farbe: f, rang: "O" }));
+            farben.forEach(f => opts.push({ type: 'kombi', farbe: f, rang: "U" }));
+            ["A", "10", "K", "9", "8", "7"].forEach(r => opts.push({ type: 'kombi', farbe: "Herz", rang: r }));
+            ["Eichel", "Gras", "Schellen"].forEach(f => {
+                ["A", "10", "K", "9", "8", "7"].forEach(r => opts.push({ type: 'kombi', farbe: f, rang: r }));
+            });
+            farben.forEach(f => opts.push({ type: 'farbe', farbe: f }));
+            opts.push({ type: 'special', label: 'Trumpf' });
+            return opts;
+        })();
+
+        const zones = [
+            { id: 'top-red', label: 'Oben: Nicht', color: 'bg-red-500/20', border: 'border-red-500', pos: 'col-start-2 row-start-1' },
+            { id: 'top-green', label: 'Oben: Hat', color: 'bg-green-500/20', border: 'border-green-500', pos: 'col-start-2 row-start-1 justify-self-end' },
+            { id: 'left-red', label: 'Links: Nicht', color: 'bg-red-500/20', border: 'border-red-500', pos: 'col-start-1 row-start-2' },
+            { id: 'left-green', label: 'Links: Hat', color: 'bg-green-500/20', border: 'border-green-500', pos: 'col-start-1 row-start-2 self-end' },
+            { id: 'right-red', label: 'Rechts: Nicht', color: 'bg-red-500/20', border: 'border-red-500', pos: 'col-start-3 row-start-2' },
+            { id: 'right-green', label: 'Rechts: Hat', color: 'bg-green-500/20', border: 'border-green-500', pos: 'col-start-3 row-start-2 self-end' },
+            { id: 'arena-north', label: '', isArena: true },
+            { id: 'arena-east', label: '', isArena: true },
+            { id: 'arena-south', label: '', isArena: true },
+            { id: 'arena-west', label: '', isArena: true },
+            ...Array.from({length: 8}, (_, i) => ({ id: `hand-slot-${i+1}`, label: '', isHand: true }))
+        ];
+
+        for(let i = 1; i <= 8; i++) {
+            zones.push({ 
+                id: `trick-${i}`, 
+                label: `Stich ${i}`, 
+                color: 'bg-blue-500/10', 
+                border: 'border-blue-500/30', 
+                isTrick: true 
+            });
+        }
+
+        let cards = [];
+
+        const setupScoreInput = (id) => {
+            const input = document.getElementById(id);
+            input.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const currentVal = parseInt(input.value) || 0;
+                const step = e.deltaY < 0 ? 1 : -1;
+                input.value = Math.max(0, currentVal + step);
+            }, { passive: false });
+        };
+        setupScoreInput('score-opponent');
+        setupScoreInput('score-player');
+
+        function createZoneElement(zone) {
+            let zoneEl = document.getElementById(zone.id);
+            if (!zoneEl) {
+                zoneEl = document.createElement('div');
+                zoneEl.id = zone.id;
+                let baseClasses = `${zone.color} border-2 ${zone.border} border-dashed rounded-xl p-1 flex flex-wrap content-start gap-1 transition-all cursor-crosshair relative custom-scroll overflow-y-auto card-slot`;
+                
+                if (zone.isTrick) {
+                    zoneEl.className = `${baseClasses} w-full h-full min-h-[80px] bg-white/5`;
+                } else {
+                    zoneEl.className = `${baseClasses} ${zone.pos} ${zone.id.includes('top') ? 'w-[49%]' : 'h-[49%] w-full'}`;
+                }
+                
+                const label = document.createElement('span');
+                label.className = "absolute top-0.5 left-1 text-[8px] uppercase font-bold opacity-30 pointer-events-none z-0";
+                label.innerText = zone.label;
+                zoneEl.appendChild(label);
+            }
+
+            zoneEl.onclick = (e) => { if(e.target === zoneEl) addCard(zone.id); };
+            zoneEl.ondragover = (e) => e.preventDefault();
+            zoneEl.ondrop = (e) => handleDrop(e, zone.id);
+            
+            return zoneEl;
+        }
+
+        function render() {
+            const grid = document.getElementById('main-grid');
+            const tricksGrid = document.getElementById('tricks-grid');
+
+            zones.forEach(zone => {
+                const zoneEl = document.getElementById(zone.id);
+                if (!zoneEl && !zone.isArena && !zone.isHand) {
+                    const el = createZoneElement(zone);
+                    if (zone.isTrick) tricksGrid.appendChild(el);
+                    else grid.appendChild(el);
+                } else if (zoneEl) {
+                    zoneEl.onclick = (e) => { if(e.target === zoneEl) addCard(zone.id); };
+                    zoneEl.ondragover = (e) => e.preventDefault();
+                    zoneEl.ondrop = (e) => handleDrop(e, zone.id);
+                }
+            });
+
+            zones.forEach(zone => {
+                const zoneEl = document.getElementById(zone.id);
+                if (!zoneEl) return;
+
+                Array.from(zoneEl.children).forEach(child => {
+                    if (child.tagName === 'DIV') zoneEl.removeChild(child);
+                });
+
+                cards.filter(c => c.zoneId === zone.id).forEach(card => {
+                    const opt = cardOptions[card.optionIndex];
+                    const cardEl = document.createElement('div');
+                    cardEl.draggable = true;
+                    
+                    let sizeClasses = "w-12 h-14";
+                    if (zone.isArena) sizeClasses = "w-24 h-32 p-2";
+                    if (zone.isHand) sizeClasses = "w-20 h-28 p-1.5";
+
+                    cardEl.className = `${sizeClasses} rounded-lg shadow-xl flex flex-col items-center justify-between p-1 cursor-grab active:cursor-grabbing transform hover:scale-105 transition-transform overflow-hidden ${opt.type === 'special' ? 'bg-amber-400 text-black border-2 border-amber-600' : 'bg-white text-neutral-900'}`;
+                    
+                    cardEl.oncontextmenu = (e) => { e.preventDefault(); removeCard(card.id); };
+                    cardEl.onwheel = (e) => { e.preventDefault(); cycleOption(card.id, e.deltaY > 0 ? 1 : -1); };
+                    cardEl.ondragstart = (e) => { e.dataTransfer.setData('cardId', card.id); };
+
+                    if (opt.type === 'special') {
+                        cardEl.innerHTML = `
+                            <div class="flex flex-col items-center justify-center h-full w-full">
+                                <span class="${zone.isArena || zone.isHand ? 'text-4xl' : 'text-xl'} font-black leading-none">T</span>
+                                <span class="${zone.isArena || zone.isHand ? 'text-[12px]' : 'text-[8px]'} font-bold tracking-widest uppercase">Trumpf</span>
+                            </div>
+                        `;
+                    } else if (opt.type === 'farbe') {
+                        const imgSize = zone.isArena || zone.isHand ? 'w-16 h-16' : 'w-7 h-7';
+                        cardEl.innerHTML = `<img src="${IMAGES[opt.farbe]}" class="${imgSize} object-contain my-auto">`;
+                    } else {
+                        const imgSize = zone.isArena || zone.isHand ? 'w-14 h-14' : 'w-6 h-6';
+                        const textSize = zone.isArena || zone.isHand ? 'text-3xl mt-1' : 'text-lg mt-0.5';
+                        cardEl.innerHTML = `
+                            <div class="flex flex-col items-center justify-center h-full w-full gap-0">
+                                <img src="${IMAGES[opt.farbe]}" class="${imgSize} object-contain">
+                                <div class="font-black ${textSize} leading-none">${opt.rang}</div>
+                            </div>
+                        `;
+                    }
+                    zoneEl.appendChild(cardEl);
+                });
+            });
+        }
+
+        function addCard(zoneId) {
+            const zone = zones.find(z => z.id === zoneId);
+            const currentCards = cards.filter(c => c.zoneId === zoneId);
+            if ((zone.isArena || zone.isHand) && currentCards.length >= 1) return;
+            if (zone.isTrick && currentCards.length >= 4) return;
+            cards.push({ id: Math.random().toString(36), zoneId, optionIndex: 0 });
+            render();
+        }
+
+        function removeCard(id) {
+            cards = cards.filter(c => c.id !== id);
+            render();
+        }
+
+        function cycleOption(id, dir) {
+            const card = cards.find(c => c.id === id);
+            if (card) {
+                card.optionIndex = (card.optionIndex + dir + cardOptions.length) % cardOptions.length;
+                render();
+            }
+        }
+
+        function handleDrop(e, zoneId) {
+            e.preventDefault();
+            const id = e.dataTransfer.getData('cardId');
+            const card = cards.find(c => c.id === id);
+            const zone = zones.find(z => z.id === zoneId);
+            if (card) {
+                const currentCards = cards.filter(c => c.zoneId === zoneId);
+                if ((zone.isArena || zone.isHand) && currentCards.length >= 1) return;
+                if (zone.isTrick && currentCards.length >= 4) return;
+                card.zoneId = zoneId;
+                render();
+            }
+        }
+
+        function collectTrick() {
+            const arenaCardIds = ['arena-north', 'arena-east', 'arena-south', 'arena-west'];
+            const cardsInArena = cards.filter(c => arenaCardIds.includes(c.zoneId));
+            if (cardsInArena.length === 0) return;
+
+            let targetTrickId = null;
+            for (let i = 1; i <= 8; i++) {
+                const trickId = `trick-${i}`;
+                const cardsInTrick = cards.filter(c => c.zoneId === trickId);
+                if (cardsInTrick.length === 0) {
+                    targetTrickId = trickId;
+                    break;
+                }
+            }
+            if (targetTrickId) {
+                cardsInArena.forEach(card => {
+                    card.zoneId = targetTrickId;
+                });
+                render();
+            }
+        }
+
+        lucide.createIcons();
+        render();
+    </script>
+</body>
+</html>

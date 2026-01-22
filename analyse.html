@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schafkopf Analyse Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            background-color: #171717;
+            color: white;
+            user-select: none;
+            overflow: hidden;
+            height: 100vh;
+            font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+        }
+        .card-slot {
+            transition: all 0.2s ease;
+        }
+        .card-slot:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        .video-container:hover .video-controls {
+            opacity: 1;
+        }
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #404040;
+            border-radius: 10px;
+        }
+        input[type=range] {
+            accent-color: #ef4444;
+        }
+        .cursor-grab { cursor: grab; }
+        .cursor-grabbing { cursor: grabbing; }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="p-4 flex flex-col gap-4">
+
+    <!-- Main Grid - Oben 80px, Mitte flexibel -->
+    <div class="flex-1 grid grid-cols-[210px_1fr_210px] grid-rows-[80px_1fr] gap-4 relative min-h-0" id="main-grid">
+        
+        <!-- Punktestand Gegner -->
+        <div class="col-start-1 row-start-1 flex items-end justify-end pb-2">
+            <div class="bg-red-900/40 border border-red-500/50 rounded-lg p-2 flex items-center gap-2">
+                <span class="text-[10px] font-bold uppercase text-red-400">Gegner</span>
+                <input type="number" value="0" id="score-opponent" class="bg-transparent border-b border-red-500/50 w-10 text-center text-xl font-bold focus:outline-none focus:border-red-400 cursor-ns-resize" title="Scrollen zum Ändern" />
+            </div>
+        </div>
+
+        <!-- Punktestand Spieler -->
+        <div class="col-start-3 row-start-1 flex items-end justify-start pb-2">
+            <div class="bg-green-900/40 border border-green-500/50 rounded-lg p-2 flex items-center gap-2">
+                <span class="text-[10px] font-bold uppercase text-green-400">Spieler</span>
+                <input type="number" value="0" id="score-player" class="bg-transparent border-b border-green-500/50 w-10 text-center text-xl font-bold focus:outline-none focus:border-green-400 cursor-ns-resize" title="Scrollen zum Ändern" />
+            </div>
+        </div>
+
+        <!-- Central Video Area -->
+        <div class="col-start-2 row-start-2 bg-black rounded-3xl overflow-hidden border-4 border-neutral-800 shadow-2xl relative group video-container flex items-center justify-center">
+            
+            <div id="video-wrapper" class="w-full h-full flex items-center justify-center cursor-grab overflow-hidden">
+                <video id="main-video" 
+                    class="max-w-full max-h-full object-contain pointer-events-none transition-transform duration-75" 
+                    loop 
+                    src="https://assets.mixkit.co/videos/preview/mixkit-abstract-technology-vj-loop-background-34440-large.mp4">
+                </video>
+            </div>
+
+            <div class="video-controls absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 transition-opacity duration-300 flex flex-col gap-2">
+                <div class="flex items-center gap-3 w-full px-2">
+                    <span id="time-current" class="text-[10px] font-mono min-w-[35px]">0:00</span>
+                    <input type="range" id="seek-bar" class="flex-1 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer" value="0" step="0.1">
+                    <span id="time-duration" class="text-[10px] font-mono min-w-[35px]">0:00</span>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <button onclick="togglePlay()" class="p-2 hover:bg-white/20 rounded-full transition-colors">
+                        <i id="play-icon" data-lucide="play" class="w-5 h-5"></i>
+                    </button>
+                    <button onclick="toggleMute()" class="p-2 hover:bg-white/20 rounded-full transition-colors">
+                        <i id="mute-icon" data-lucide="volume-x" class="w-5 h-5"></i>
+                    </button>
+                    
+                    <button onclick="resetZoom()" class="text-[10px] bg-white/10 hover:bg-white/20 px-2 py-1 rounded border border-white/20 transition-all uppercase font-bold">
+                        Reset Zoom
+                    </button>
+
+                    <div class="flex-1"></div>
+                    
+                    <input type="file" id="video-upload" accept="video/*" class="hidden" onchange="handleFileSelect(event)">
+                    <button onclick="document.getElementById('video-upload').click()" class="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 text-sm font-bold transition-all shadow-xl">
+                        <i data-lucide="upload" class="w-4 h-4"></i>
+                        Video auswählen
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stich-Bereiche (4x2 Raster) -->
+    <div class="grid grid-cols-4 grid-rows-2 gap-3 h-56 shrink-0 overflow-y-auto custom-scroll p-1" id="tricks-grid">
+        <!-- Wird per JS befüllt -->
+    </div>
+
+    <script>
+        const IMAGES = {
+            "Eichel": 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Bay_eichel.svg/60px-Bay_eichel.svg.png',
+            "Gras": 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Bay_gras.svg/66px-Bay_gras.svg.png',
+            "Herz": 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Bay_herz.svg/64px-Bay_herz.svg.png',
+            "Schellen": 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Bay_schellen.svg/70px-Bay_schellen.svg.png'
+        };
+
+        const cardOptions = (() => {
+            const farben = ["Eichel", "Gras", "Herz", "Schellen"];
+            let opts = [];
+            farben.forEach(f => opts.push({ type: 'kombi', farbe: f, rang: "O" }));
+            farben.forEach(f => opts.push({ type: 'kombi', farbe: f, rang: "U" }));
+            ["A", "10", "K", "9", "8", "7"].forEach(r => opts.push({ type: 'kombi', farbe: "Herz", rang: r }));
+            ["Eichel", "Gras", "Schellen"].forEach(f => {
+                ["A", "10", "K", "9", "8", "7"].forEach(r => opts.push({ type: 'kombi', farbe: f, rang: r }));
+            });
+            farben.forEach(f => opts.push({ type: 'farbe', farbe: f }));
+            opts.push({ type: 'special', label: 'Trumpf' });
+            return opts;
+        })();
+
+        const zones = [
+            { id: 'top-red', label: 'Oben: Nicht', color: 'bg-red-500/20', border: 'border-red-500', pos: 'col-start-2 row-start-1' },
+            { id: 'top-green', label: 'Oben: Hat', color: 'bg-green-500/20', border: 'border-green-500', pos: 'col-start-2 row-start-1 justify-self-end' },
+            { id: 'left-red', label: 'Links: Nicht', color: 'bg-red-500/20', border: 'border-red-500', pos: 'col-start-1 row-start-2' },
+            { id: 'left-green', label: 'Links: Hat', color: 'bg-green-500/20', border: 'border-green-500', pos: 'col-start-1 row-start-2 self-end' },
+            { id: 'right-red', label: 'Rechts: Nicht', color: 'bg-red-500/20', border: 'border-red-500', pos: 'col-start-3 row-start-2' },
+            { id: 'right-green', label: 'Rechts: Hat', color: 'bg-green-500/20', border: 'border-green-500', pos: 'col-start-3 row-start-2 self-end' }
+        ];
+
+        for(let i = 1; i <= 8; i++) {
+            zones.push({ 
+                id: `trick-${i}`, 
+                label: `Stich ${i}`, 
+                color: 'bg-blue-500/10', 
+                border: 'border-blue-500/30', 
+                isTrick: true 
+            });
+        }
+
+        let cards = [];
+        const video = document.getElementById('main-video');
+        const seekBar = document.getElementById('seek-bar');
+        const timeCurrent = document.getElementById('time-current');
+        const timeDuration = document.getElementById('time-duration');
+        const videoWrapper = document.getElementById('video-wrapper');
+
+        let scale = 1;
+        let translateX = 0;
+        let translateY = 0;
+        let isDragging = false;
+        let startX, startY;
+
+        const setupScoreInput = (id) => {
+            const input = document.getElementById(id);
+            input.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const currentVal = parseInt(input.value) || 0;
+                const step = e.deltaY < 0 ? 1 : -1;
+                input.value = Math.max(0, currentVal + step);
+            }, { passive: false });
+        };
+        setupScoreInput('score-opponent');
+        setupScoreInput('score-player');
+
+        function formatTime(seconds) {
+            const min = Math.floor(seconds / 60);
+            const sec = Math.floor(seconds % 60);
+            return `${min}:${sec.toString().padStart(2, '0')}`;
+        }
+
+        video.addEventListener('loadedmetadata', () => {
+            seekBar.max = video.duration;
+            timeDuration.innerText = formatTime(video.duration);
+        });
+
+        video.addEventListener('timeupdate', () => {
+            if (!isDragging) {
+                seekBar.value = video.currentTime;
+                timeCurrent.innerText = formatTime(video.currentTime);
+            }
+        });
+
+        seekBar.addEventListener('input', () => {
+            video.currentTime = seekBar.value;
+            timeCurrent.innerText = formatTime(seekBar.value);
+        });
+
+        function togglePlay() {
+            if (video.paused) {
+                video.play();
+                document.getElementById('play-icon').setAttribute('data-lucide', 'pause');
+            } else {
+                video.pause();
+                document.getElementById('play-icon').setAttribute('data-lucide', 'play');
+            }
+            lucide.createIcons();
+        }
+
+        function toggleMute() {
+            video.muted = !video.muted;
+            document.getElementById('mute-icon').setAttribute('data-lucide', video.muted ? 'volume-x' : 'volume-2');
+            lucide.createIcons();
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                video.src = url;
+                resetZoom();
+                video.play();
+                document.getElementById('play-icon').setAttribute('data-lucide', 'pause');
+                lucide.createIcons();
+            }
+        }
+
+        videoWrapper.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            scale = Math.min(Math.max(0.5, scale + delta), 5);
+            updateTransform();
+        }, { passive: false });
+
+        videoWrapper.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            videoWrapper.classList.replace('cursor-grab', 'cursor-grabbing');
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            updateTransform();
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+            videoWrapper.classList.replace('cursor-grabbing', 'cursor-grab');
+        });
+
+        function updateTransform() {
+            video.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        }
+
+        function resetZoom() {
+            scale = 1; translateX = 0; translateY = 0;
+            updateTransform();
+        }
+
+        function createZoneElement(zone) {
+            const zoneEl = document.createElement('div');
+            zoneEl.id = zone.id;
+            
+            let baseClasses = `${zone.color} border-2 ${zone.border} border-dashed rounded-xl p-1 flex flex-wrap content-start gap-1 transition-all cursor-crosshair relative custom-scroll overflow-y-auto card-slot`;
+            
+            if (zone.isTrick) {
+                zoneEl.className = `${baseClasses} w-full h-full min-h-[100px] bg-white/5`;
+            } else {
+                zoneEl.className = `${baseClasses} ${zone.pos} ${zone.id.includes('top') ? 'w-[49%]' : 'h-[49%] w-full'}`;
+            }
+            
+            const label = document.createElement('span');
+            label.className = "absolute top-0.5 left-1 text-[8px] uppercase font-bold opacity-30 pointer-events-none z-0";
+            label.innerText = zone.label;
+            zoneEl.appendChild(label);
+
+            zoneEl.onclick = (e) => { if(e.target === zoneEl) addCard(zone.id); };
+            zoneEl.ondragover = (e) => e.preventDefault();
+            zoneEl.ondrop = (e) => handleDrop(e, zone.id);
+            
+            return zoneEl;
+        }
+
+        function render() {
+            const grid = document.getElementById('main-grid');
+            const tricksGrid = document.getElementById('tricks-grid');
+
+            if (grid.querySelectorAll('.card-slot').length === 0) {
+                zones.forEach(zone => {
+                    const el = createZoneElement(zone);
+                    if (zone.isTrick) {
+                        tricksGrid.appendChild(el);
+                    } else {
+                        grid.appendChild(el);
+                    }
+                });
+            }
+
+            zones.forEach(zone => {
+                const zoneEl = document.getElementById(zone.id);
+                Array.from(zoneEl.children).forEach(child => {
+                    if (child.tagName === 'DIV') zoneEl.removeChild(child);
+                });
+
+                cards.filter(c => c.zoneId === zone.id).forEach(card => {
+                    const opt = cardOptions[card.optionIndex];
+                    const cardEl = document.createElement('div');
+                    cardEl.draggable = true;
+                    
+                    const sizeClasses = "w-12 h-14";
+                    cardEl.className = `${sizeClasses} rounded shadow-lg flex flex-col items-center justify-between p-0.5 cursor-grab active:cursor-grabbing transform hover:scale-105 transition-transform overflow-hidden ${opt.type === 'special' ? 'bg-amber-400 text-black border-2 border-amber-600' : 'bg-white text-neutral-900'}`;
+                    
+                    cardEl.oncontextmenu = (e) => { e.preventDefault(); removeCard(card.id); };
+                    cardEl.onwheel = (e) => { e.preventDefault(); cycleOption(card.id, e.deltaY > 0 ? 1 : -1); };
+                    cardEl.ondragstart = (e) => { e.dataTransfer.setData('cardId', card.id); };
+
+                    if (opt.type === 'special') {
+                        cardEl.innerHTML = `
+                            <div class="flex flex-col items-center justify-center h-full w-full">
+                                <span class="text-xl font-black leading-none">T</span>
+                                <span class="text-[8px] font-bold tracking-widest uppercase">Trumpf</span>
+                            </div>
+                        `;
+                    } else if (opt.type === 'farbe') {
+                        cardEl.innerHTML = `<img src="${IMAGES[opt.farbe]}" class="w-7 h-7 object-contain my-auto">`;
+                    } else {
+                        cardEl.innerHTML = `
+                            <div class="flex flex-col items-center justify-center h-full w-full gap-0">
+                                <img src="${IMAGES[opt.farbe]}" class="w-6 h-6 object-contain">
+                                <div class="font-black text-lg leading-none mt-0.5">${opt.rang}</div>
+                            </div>
+                        `;
+                    }
+                    zoneEl.appendChild(cardEl);
+                });
+            });
+        }
+
+        function addCard(zoneId) {
+            const zone = zones.find(z => z.id === zoneId);
+            if (zone.isTrick && cards.filter(c => c.zoneId === zoneId).length >= 4) return;
+            
+            cards.push({ id: Math.random().toString(36), zoneId, optionIndex: 0 });
+            render();
+        }
+
+        function removeCard(id) {
+            cards = cards.filter(c => c.id !== id);
+            render();
+        }
+
+        function cycleOption(id, dir) {
+            const card = cards.find(c => c.id === id);
+            if (card) {
+                card.optionIndex = (card.optionIndex + dir + cardOptions.length) % cardOptions.length;
+                render();
+            }
+        }
+
+        function handleDrop(e, zoneId) {
+            e.preventDefault();
+            const id = e.dataTransfer.getData('cardId');
+            const card = cards.find(c => c.id === id);
+            const zone = zones.find(z => z.id === zoneId);
+            
+            if (card) {
+                if (zone.isTrick && cards.filter(c => c.zoneId === zoneId).length >= 4) return;
+                card.zoneId = zoneId;
+                render();
+            }
+        }
+
+        lucide.createIcons();
+        render();
+        video.muted = true;
+    </script>
+</body>
+</html>

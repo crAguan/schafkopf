@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-wscale=1.0">
+    <title>Schafkopf Karten Zähler</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom styles for text shadow */
+        .text-shadow-lg {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        /* Responsive video container - simplified to rely on flexbox for dimensions */
+        .video-container {
+            position: relative; /* Still relative for video element positioning */
+            overflow: hidden;
+            border-radius: 0.75rem; /* rounded-xl */
+            background-color: rgba(0, 0, 0, 0.5); /* Dark background for empty state */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 1.25rem;
+            /* Added padding-bottom for aspect ratio, as it was removed from the parent div */
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0; /* Important for padding-bottom to work as aspect ratio */
+        }
+        /* Styling for the video element itself */
+        .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Ensures the video fits within the container without cropping */
+        }
+    </style>
+</head>
+<body class="bg-black text-white min-h-screen flex items-center justify-center p-2 sm:p-4 lg:p-6">
+    <!-- The root div where the React app will be mounted -->
+    <!-- Flex container for horizontal layout on large screens, vertical on small -->
+    <div id="root" class="w-full h-screen flex flex-col lg:flex-row gap-4 lg:gap-6"></div>
+
+    <!-- React and ReactDOM CDNs -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX transformation in browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+        // Central image URLs for each suit
+        // You can change these URLs to your desired card images
+        const EICHEL_IMAGE_URL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Bay_eichel.svg/60px-Bay_eichel.svg.png'; // Example: Brown for Eichel
+        const GRAS_IMAGE_URL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Bay_gras.svg/66px-Bay_gras.svg.png'; // Example: Green for Gras
+        const HERZ_IMAGE_URL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Bay_herz.svg/64px-Bay_herz.svg.png'; // Example: Red for Herz
+        const SCHELLEN_IMAGE_URL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Bay_schellen.svg/70px-Bay_schellen.svg.png'; // Example: Gold for Schellen
+
+        // Define all 32 cards with their base properties, point values, and suitKey for image reference
+        const allCardsData = [
+          // Ober (always trumps in Rufspiel/Solo, suit in Wenz)
+          { name: 'Eichel Ober', suit: 'Eichel', rank: 'Ober', rankSymbol: 'O', points: 3, suitKey: 'eichel' },
+          { name: 'Gras Ober', suit: 'Gras', rank: 'Ober', rankSymbol: 'O', points: 3, suitKey: 'gras' },
+          { name: 'Herz Ober', suit: 'Herz', rank: 'Ober', rankSymbol: 'O', points: 3, suitKey: 'herz' },
+          { name: 'Schell Ober', suit: 'Schellen', rank: 'Ober', rankSymbol: 'O', points: 3, suitKey: 'schellen' },
+
+          // Unter (always trumps)
+          { name: 'Eichel Unter', suit: 'Eichel', rank: 'Unter', rankSymbol: 'U', points: 2, suitKey: 'eichel' },
+          { name: 'Gras Unter', suit: 'Gras', rank: 'Unter', rankSymbol: 'U', points: 2, suitKey: 'gras' },
+          { name: 'Herz Unter', suit: 'Herz', rank: 'Unter', rankSymbol: 'U', points: 2, suitKey: 'herz' },
+          { name: 'Schell Unter', suit: 'Schellen', rank: 'Unter', rankSymbol: 'U', points: 2, suitKey: 'schellen' },
+
+          // Herz cards (trumps in Rufspiel/Herzsolo, suit in Wenz/other solos)
+          { name: 'Herz Ass', suit: 'Herz', rank: 'Ass', rankSymbol: 'A', points: 11, suitKey: 'herz' },
+          { name: 'Herz Zehn', suit: 'Herz', rank: 'Zehn', rankSymbol: '10', points: 10, suitKey: 'herz' },
+          { name: 'Herz König', suit: 'Herz', rank: 'König', rankSymbol: 'K', points: 4, suitKey: 'herz' },
+          { name: 'Herz Neun', suit: 'Herz', rank: 'Neun', rankSymbol: '9', points: 0, suitKey: 'herz' },
+          { name: 'Herz Acht', suit: 'Herz', rank: 'Acht', rankSymbol: '8', points: 0, suitKey: 'herz' },
+          { name: 'Herz Sieben', suit: 'Herz', rank: 'Sieben', rankSymbol: '7', points: 0, suitKey: 'herz' },
+
+          // Eichel cards (suits)
+          { name: 'Eichel Ass', suit: 'Eichel', rank: 'Ass', rankSymbol: 'A', points: 11, suitKey: 'eichel' },
+          { name: 'Eichel Zehn', suit: 'Eichel', rank: 'Zehn', rankSymbol: '10', points: 10, suitKey: 'eichel' },
+          { name: 'Eichel König', suit: 'Eichel', rank: 'König', rankSymbol: 'K', points: 4, suitKey: 'eichel' },
+          { name: 'Eichel Neun', suit: 'Eichel', rank: 'Neun', rankSymbol: '9', points: 0, suitKey: 'eichel' },
+          { name: 'Eichel Acht', suit: 'Eichel', rank: 'Acht', rankSymbol: '8', points: 0, suitKey: 'eichel' },
+          { name: 'Eichel Sieben', suit: 'Eichel', rank: 'Sieben', rankSymbol: '7', points: 0, suitKey: 'eichel' },
+
+          // Gras cards (suits)
+          { name: 'Gras Ass', suit: 'Gras', rank: 'Ass', rankSymbol: 'A', points: 11, suitKey: 'gras' },
+          { name: 'Gras Zehn', suit: 'Gras', rank: 'Zehn', rankSymbol: '10', points: 10, suitKey: 'gras' },
+          { name: 'Gras König', suit: 'Gras', rank: 'König', rankSymbol: 'K', points: 4, suitKey: 'gras' },
+          { name: 'Gras Neun', suit: 'Gras', rank: 'Neun', rankSymbol: '9', points: 0, suitKey: 'gras' },
+          { name: 'Gras Acht', suit: 'Gras', rank: 'Acht', rankSymbol: '8', points: 0, suitKey: 'gras' },
+          { name: 'Gras Sieben', suit: 'Gras', rank: 'Sieben', rankSymbol: '7', points: 0, suitKey: 'gras' },
+
+          // Schellen cards (suits)
+          { name: 'Schell Ass', suit: 'Schellen', rank: 'Ass', rankSymbol: 'A', points: 11, suitKey: 'schellen' },
+          { name: 'Schell Zehn', suit: 'Schellen', rank: 'Zehn', rankSymbol: '10', points: 10, suitKey: 'schellen' },
+          { name: 'Schell König', suit: 'Schellen', rank: 'König', rankSymbol: 'K', points: 4, suitKey: 'schellen' },
+          { name: 'Schell Neun', suit: 'Schellen', rank: 'Neun', rankSymbol: '9', points: 0, suitKey: 'schellen' },
+          { name: 'Schell Acht', suit: 'Schellen', rank: 'Acht', rankSymbol: '8', points: 0, suitKey: 'schellen' },
+          { name: 'Schell Sieben', suit: 'Schellen', rank: 'Sieben', rankSymbol: '7', points: 0, suitKey: 'schellen' },
+        ];
+
+        // Function to categorize cards based on the selected game mode
+        const getCardsForMode = (mode, allCards) => {
+          let trumps = [];
+          let eichelCards = [];
+          let grasCards = [];
+          let herzCards = [];
+          let schellenCards = [];
+
+          const oberCards = allCards.filter(card => card.rank === 'Ober');
+          const unterCards = allCards.filter(card => card.rank === 'Unter');
+          const nonOberUnterCards = allCards.filter(card => card.rank !== 'Ober' && card.rank !== 'Unter');
+
+          switch (mode) {
+            case 'Auf die Alte': // Assuming these are variations of Rufspiel with Herz trumps
+            case 'Auf die Blaue':
+            case 'Auf die Schellen':
+            case 'Herzsolo': // Herzsolo trumps are identical to Rufspiel
+              trumps = [
+                ...oberCards,
+                ...unterCards,
+                ...nonOberUnterCards.filter(card => card.suit === 'Herz')
+              ];
+              eichelCards = nonOberUnterCards.filter(card => card.suit === 'Eichel');
+              grasCards = nonOberUnterCards.filter(card => card.suit === 'Gras');
+              schellenCards = nonOberUnterCards.filter(card => card.suit === 'Schellen');
+              break;
+
+            case 'Wenz':
+              trumps = [...unterCards];
+              // Ober cards become part of their respective suits
+              eichelCards = [...oberCards.filter(card => card.suit === 'Eichel'), ...nonOberUnterCards.filter(card => card.suit === 'Eichel')];
+              grasCards = [...oberCards.filter(card => card.suit === 'Gras'), ...nonOberUnterCards.filter(card => card.suit === 'Gras')];
+              herzCards = [...oberCards.filter(card => card.suit === 'Herz'), ...nonOberUnterCards.filter(card => card.suit === 'Herz')];
+              schellenCards = [...oberCards.filter(card => card.suit === 'Schellen'), ...nonOberUnterCards.filter(card => card.suit === 'Schellen')];
+              break;
+
+            case 'Eichelsolo':
+              trumps = [
+                ...oberCards,
+                ...unterCards,
+                ...nonOberUnterCards.filter(card => card.suit === 'Eichel')
+              ];
+              grasCards = nonOberUnterCards.filter(card => card.suit === 'Gras');
+              herzCards = nonOberUnterCards.filter(card => card.suit === 'Herz'); // Herz is a normal suit
+              schellenCards = nonOberUnterCards.filter(card => card.suit === 'Schellen');
+              break;
+
+            case 'Grassolo':
+              trumps = [
+                ...oberCards,
+                ...unterCards,
+                ...nonOberUnterCards.filter(card => card.suit === 'Gras')
+              ];
+              eichelCards = nonOberUnterCards.filter(card => card.suit === 'Eichel');
+              herzCards = nonOberUnterCards.filter(card => card.suit === 'Herz');
+              schellenCards = nonOberUnterCards.filter(card => card.suit === 'Schellen');
+              break;
+
+            case 'Schellensolo':
+              trumps = [
+                ...oberCards,
+                ...unterCards,
+                ...nonOberUnterCards.filter(card => card.suit === 'Schellen')
+              ];
+              eichelCards = nonOberUnterCards.filter(card => card.suit === 'Eichel');
+              grasCards = nonOberUnterCards.filter(card => card.suit === 'Gras');
+              herzCards = nonOberUnterCards.filter(card => card.suit === 'Herz');
+              break;
+
+            default:
+              // Fallback to Herzsolo/Rufspiel if mode is unknown
+              trumps = [
+                ...oberCards,
+                ...unterCards,
+                ...nonOberUnterCards.filter(card => card.suit === 'Herz')
+              ];
+              eichelCards = nonOberUnterCards.filter(card => card.suit === 'Eichel');
+              grasCards = nonOberUnterCards.filter(card => card.suit === 'Gras');
+              schellenCards = nonOberUnterCards.filter(card => card.suit === 'Schellen');
+              break;
+          }
+
+          // Sort trumps by rank (Ober > Unter > Ass > Zehn > König > Neun > Acht > Sieben)
+          const trumpOrder = ['Ober', 'Unter', 'Ass', 'Zehn', 'König', 'Neun', 'Acht', 'Sieben'];
+          trumps.sort((a, b) => {
+            // Custom sort for Ober/Unter first
+            if (a.rank === 'Ober' && b.rank !== 'Ober') return -1;
+            if (a.rank !== 'Ober' && b.rank === 'Ober') return 1;
+            if (a.rank === 'Unter' && b.rank !== 'Unter' && a.rank !== 'Ober') return -1;
+            if (a.rank !== 'Unter' && b.rank === 'Unter' && b.rank !== 'Ober') return 1;
+
+            // Then sort by general trump order
+            return trumpOrder.indexOf(a.rank) - trumpOrder.indexOf(b.rank);
+          });
+
+          // Sort suits by rank (Ass > Zehn > König > Neun > Acht > Sieben)
+          // For Wenz, Ober also needs to be considered in suit order
+          const suitOrder = ['Ass', 'Zehn', 'König', 'Ober', 'Unter', 'Neun', 'Acht', 'Sieben'];
+          const sortSuits = (cardsArray) => {
+            return cardsArray.sort((a, b) => suitOrder.indexOf(a.rank) - suitOrder.indexOf(b.rank));
+          };
+
+          return {
+            trumps: trumps,
+            eichelCards: sortSuits(eichelCards),
+            grasCards: sortSuits(grasCards),
+            herzCards: sortSuits(herzCards),
+            schellenCards: sortSuits(schellenCards),
+          };
+        };
+
+        // Main App component
+        function App() {
+          // State for the selected game mode
+          const [selectedMode, setSelectedMode] = React.useState('Auf die Alte'); // Default to first new option
+          // State to manage the cards and their 'played' status
+          const [cards, setCards] = React.useState(() => {
+            // Initialize cards with 'played' status based on allCardsData
+            return allCardsData.map(card => ({ ...card, played: false }));
+          });
+          // State for player scores, initialized to 4 players with 0 points
+          const [playerScores, setPlayerScores] = React.useState([0, 0, 0, 0]);
+          // State to hold cards currently selected for a trick (max 4)
+          const [currentTrickCards, setCurrentTrickCards] = React.useState([]);
+          // State to control the visibility of the trick assignment dialog
+          const [showTrickDialog, setShowTrickDialog] = React.useState(false);
+          // State to store the history of tricks for undo functionality
+          const [trickHistory, setTrickHistory] = React.useState([]);
+          // State for the local video URL
+          const [localVideoUrl, setLocalVideoUrl] = React.useState(null);
+
+          // New state for Rufspiel team selection
+          const [rufspielTeam, setRufspielTeam] = React.useState([]); // Stores indices of 2 players in the team
+          // New state for Solo player selection
+          const [soloPlayerIndex, setSoloPlayerIndex] = React.useState(null); // Stores index of the solo player
+
+          // New state for player color selection
+          const [selectedPlayerColor, setSelectedPlayerColor] = React.useState('rot'); // Default value
+
+          // Derived state for categorized cards based on selected mode
+          const [categorizedCards, setCategorizedCards] = React.useState(getCardsForMode(selectedMode, cards));
+
+          // Player colors
+          const playerColors = ['bg-red-600', 'bg-yellow-500', 'bg-green-600', 'bg-blue-600'];
+          const playerTailwindColors = ['red-600', 'yellow-500', 'green-600', 'blue-600']; // For gradient classes
+          const playerTextColors = ['text-white', 'text-gray-900', 'text-white', 'text-white']; // For contrast
+
+          // Player color options for dropdown - now includes Tailwind class for styling
+          const playerColorOptions = [
+              { value: 'rot', label: 'Spieler 1', class: 'bg-red-600 text-white' },
+              { value: 'gelb', label: 'Spieler 2', class: 'bg-yellow-500 text-gray-900' },
+              { value: 'grün', label: 'Spieler 3', class: 'bg-green-600 text-white' },
+              { value: 'blau', label: 'Spieler 4', class: 'bg-blue-600 text-white' },
+          ];
+
+          // Updated game modes for dropdown
+          const gameModes = [
+            { value: 'Auf die Alte', label: 'Auf die Alte' },
+            { value: 'Auf die Blaue', label: 'Auf die Blaue' },
+            { value: 'Auf die Schellen', label: 'Auf die Schellen' },
+            { value: 'Wenz', label: 'Wenz' },
+            { value: 'Eichelsolo', label: 'Eichelsolo' },
+            { value: 'Grassolo', label: 'Grassolo' },
+            { value: 'Herzsolo', label: 'Herzsolo' },
+            { value: 'Schellensolo', label: 'Schellensolo' },
+          ];
+
+
+          // Calculate total possible points
+          const totalPossiblePoints = allCardsData.reduce((sum, card) => sum + card.points, 0);
+
+          // Calculate points of played cards
+          const playedPoints = cards.filter(card => card.played).reduce((sum, card) => sum + card.points, 0);
+
+          // Calculate remaining points
+          const remainingPoints = totalPossiblePoints - playedPoints;
+
+          // Effect to update categorized cards when mode or played status changes
+          React.useEffect(() => {
+            setCategorizedCards(getCardsForMode(selectedMode, cards));
+          }, [selectedMode, cards]);
+
+          // Reset team/solo selection when game mode changes
+          React.useEffect(() => {
+            setRufspielTeam([]);
+            setSoloPlayerIndex(null);
+          }, [selectedMode]);
+
+          // Function to handle card clicks
+          const handleCardClick = (clickedCardName) => {
+            const clickedCard = cards.find(card => card.name === clickedCardName);
+            const isCardInTrick = currentTrickCards.some(card => card.name === clickedCardName);
+
+            // If the card is already played, do nothing (cannot re-select a played card for a new trick)
+            if (clickedCard.played) {
+              return;
+            }
+
+            // If the card is already in the current trick, remove it
+            if (isCardInTrick) {
+              setCurrentTrickCards(prev => prev.filter(card => card.name !== clickedCardName));
+            } else if (currentTrickCards.length < 4) {
+              // Add card to current trick if less than 4 cards are selected and not already in trick
+              setCurrentTrickCards(prev => [...prev, clickedCard]);
+            }
+          };
+
+          // Effect to show trick dialog when 4 cards are selected for a trick
+          React.useEffect(() => {
+            if (currentTrickCards.length === 4) {
+              setShowTrickDialog(true);
+            }
+          }, [currentTrickCards]);
+
+          // Function to assign the current trick to a player
+          const assignTrickToPlayer = (playerIndex) => {
+            const trickPoints = currentTrickCards.reduce((sum, card) => sum + card.points, 0);
+
+            // Update player scores
+            setPlayerScores(prevScores => {
+              const newScores = [...prevScores];
+              newScores[playerIndex] += trickPoints;
+              return newScores;
+            });
+
+            // Mark cards as played in the main cards state
+            setCards(prevCards =>
+              prevCards.map(card =>
+                currentTrickCards.some(trickCard => trickCard.name === card.name)
+                  ? { ...card, played: true }
+                  : card
+              )
+            );
+
+            // Add trick to history for undo
+            setTrickHistory(prevHistory => [
+              ...prevHistory,
+              {
+                cards: currentTrickCards.map(card => card.name), // Store only names for history to avoid deep copying
+                playerIndex: playerIndex,
+                points: trickPoints,
+              },
+            ]);
+
+            // Reset current trick cards and hide dialog
+            setCurrentTrickCards([]);
+            setShowTrickDialog(false);
+          };
+
+          // Function to reset all cards and scores
+          const resetGame = () => {
+            setCards(allCardsData.map(card => ({ ...card, played: false })));
+            setPlayerScores([0, 0, 0, 0]);
+            setCurrentTrickCards([]);
+            setShowTrickDialog(false);
+            setTrickHistory([]);
+            setRufspielTeam([]); // Reset team selection
+            setSoloPlayerIndex(null); // Reset solo player selection
+          };
+
+          // Function to undo the last assigned trick
+          const undoLastTrick = () => {
+            if (trickHistory.length === 0) {
+              return; // No tricks to undo
+            }
+
+            const lastTrick = trickHistory[trickHistory.length - 1];
+
+            // Subtract points from player score
+            setPlayerScores(prevScores => {
+              const newScores = [...prevScores];
+              newScores[lastTrick.playerIndex] -= lastTrick.points;
+              return newScores;
+            });
+
+            // Mark cards in the last trick as not played
+            setCards(prevCards =>
+              prevCards.map(card =>
+                lastTrick.cards.includes(card.name)
+                  ? { ...card, played: false }
+                  : card
+              )
+            );
+
+            // Remove the last trick from history
+            setTrickHistory(prevHistory => prevHistory.slice(0, prevHistory.length - 1));
+          };
+
+          // Function to cancel the trick assignment dialog
+          const cancelTrickAssignment = () => {
+            // Remove the last selected card from currentTrickCards
+            setCurrentTrickCards(prev => prev.slice(0, prev.length - 1));
+            // Hide the dialog
+            setShowTrickDialog(false);
+          };
+
+          // Handle Rufspiel team selection
+          const handleRufspielTeamSelection = (playerIndex) => {
+            if (rufspielTeam.includes(playerIndex)) {
+              setRufspielTeam(rufspielTeam.filter(p => p !== playerIndex));
+            } else if (rufspielTeam.length < 2) {
+              setRufspielTeam([...rufspielTeam, playerIndex].sort((a, b) => a - b)); // Keep sorted for consistency
+            }
+          };
+
+          // Handle Solo player selection
+          const handleSoloPlayerSelection = (playerIndex) => {
+            // If the clicked player is already the solo player, deselect them
+            if (soloPlayerIndex === playerIndex) {
+                setSoloPlayerIndex(null);
+            } else {
+                setSoloPlayerIndex(playerIndex);
+            }
+          };
+
+          // Handle local video file selection
+          const handleVideoUpload = (event) => {
+            const file = event.target.files[0];
+            if (file) {
+              // Create a URL for the selected file
+              const url = URL.createObjectURL(file);
+              setLocalVideoUrl(url);
+            }
+          };
+
+          // Determine the grid columns for suit sections dynamically
+          const suitGridColsClass = selectedMode === 'Wenz' ? 'lg:grid-cols-7' : 'lg:grid-cols-6';
+
+          // Function to get gradient for opposing team in solo modes
+          const getOpponentGradient = (soloIndex) => {
+            const opponentIndices = [0, 1, 2, 3].filter(idx => idx !== soloIndex);
+            // Sort to ensure consistent gradient direction for visual appeal
+            opponentIndices.sort((a, b) => a - b);
+            
+            // Construct gradient string using Tailwind color classes
+            let gradientClasses = 'bg-gradient-to-r';
+            if (opponentIndices.length === 3) {
+              gradientClasses += ` from-${playerTailwindColors[opponentIndices[0]]} via-${playerTailwindColors[opponentIndices[1]]} to-${playerTailwindColors[opponentIndices[2]]}`;
+            } else if (opponentIndices.length === 2) {
+              gradientClasses += ` from-${playerTailwindColors[opponentIndices[0]]} to-${playerTailwindColors[opponentIndices[1]]}`;
+            }
+            return gradientClasses;
+          };
+
+          // Determine winning states for display
+          let isTeam1Winning = false;
+          let isTeam2Winning = false; // For Rufspiel opponent team
+          let isSoloPlayerWinning = false;
+          let isOpponentTeamWinning = false; // For Wenz/Solo opponent team
+
+          if ((selectedMode === 'Auf die Alte' || selectedMode === 'Auf die Blaue' || selectedMode === 'Auf die Schellen') && rufspielTeam.length === 2) {
+            const team1Score = playerScores[rufspielTeam[0]] + playerScores[rufspielTeam[1]];
+            const team2Score = playerScores.filter((_, idx) => !rufspielTeam.includes(idx)).reduce((sum, score) => sum + score, 0);
+
+            if (team1Score >= 61) {
+              isTeam1Winning = true;
+            } else if (team2Score >= 60) {
+              isTeam2Winning = true;
+            }
+          } else if ((selectedMode === 'Wenz' || selectedMode.endsWith('solo')) && soloPlayerIndex !== null) {
+            const soloScore = playerScores[soloPlayerIndex];
+            const opponentScore = playerScores.filter((_, idx) => idx !== soloPlayerIndex).reduce((sum, score) => sum + score, 0);
+
+            if (soloScore >= 61) {
+              isSoloPlayerWinning = true;
+            } else if (opponentScore >= 60) {
+              isOpponentTeamWinning = true;
+            }
+          }
+
+          return (
+            // Main container for the app, now using flex-col for vertical layout on small screens, flex-row for large
+            <div className="w-full h-full flex flex-col lg:flex-row gap-4 lg:gap-6">
+
+              {/* Left Section: Video Player */}
+              {/* lg:w-2/3 for approx 66.6% width, h-full to take full height of root */}
+              <div className="flex-grow lg:w-2/3 w-full h-full bg-gray-800 bg-opacity-70 rounded-xl shadow-2xl p-4 sm:p-6 flex flex-col items-center">
+                
+                {/* Dropdowns for Player Color and Game Mode - Moved Game Mode here */}
+                <div className="flex justify-center items-center gap-4 mb-3 w-full">
+                    <select
+                        value={selectedPlayerColor}
+                        onChange={(e) => setSelectedPlayerColor(e.target.value)}
+                        // Dynamically apply the class of the selected player color option
+                        className={`p-2 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow ${
+                            playerColorOptions.find(option => option.value === selectedPlayerColor)?.class || 'bg-gray-700 text-white'
+                        }`}
+                    >
+                        {playerColorOptions.map(option => (
+                            <option key={option.value} value={option.value} className={option.class}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                    {/* Game Mode Selection Dropdown - Now in the left panel */}
+                    <select
+                        value={selectedMode}
+                        onChange={(e) => setSelectedMode(e.target.value)}
+                        className="p-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow"
+                    >
+                        {gameModes.map(modeOption => (
+                            <option key={modeOption.value} value={modeOption.value}>{modeOption.label}</option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* This div will now manage the video display, allowing it to grow */}
+                <div className="video-container w-full flex-grow flex items-center justify-center bg-gray-900 rounded-lg mb-4">
+                    {/* Strips - positioned absolutely at the very edges of this rounded-lg div */}
+                    {/* Green strip (top) */}
+                    <div className="absolute top-0 left-0 right-0 h-[4px] bg-green-600 rounded-t-lg z-10"></div>
+                    {/* Yellow strip (left) */}
+                    <div className="absolute top-0 left-0 bottom-0 w-[4px] bg-yellow-500 rounded-l-lg z-10"></div>
+                    {/* Blue strip (right) */}
+                    <div className="absolute top-0 right-0 bottom-0 w-[4px] bg-blue-600 rounded-r-lg z-10"></div>
+                    {/* Red strip (bottom) */}
+                    <div className="absolute bottom-0 left-0 right-0 h-[4px] bg-red-600 rounded-b-lg z-10"></div>
+
+                    {localVideoUrl ? (
+                        <video
+                            src={localVideoUrl}
+                            controls // Add controls for playback
+                            autoPlay // Autoplay (might be muted by browser policies)
+                            loop // Loop the video
+                            className="rounded-lg w-full h-full object-contain" // object-contain to prevent distortion
+                        >
+                            Dein Browser unterstützt das Video-Tag nicht.
+                        </video>
+                    ) : (
+                        <p className="text-gray-400">Wähle eine Videodatei aus</p>
+                    )}
+                </div>
+                <input
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoUpload}
+                    className="block w-full text-sm text-gray-300
+                               file:mr-4 file:py-2 file:px-4
+                               file:rounded-full file:border-0
+                               file:text-sm file:font-semibold
+                               file:bg-blue-500 file:text-white
+                               hover:file:bg-blue-600
+                               cursor-pointer mb-2"
+                />
+              </div>
+
+              {/* Right Section: Schafkopf Counter UI */}
+              {/* lg:w-1/3 for approx 33.3% width, h-full to take full height of root */}
+              <div className="flex flex-col flex-grow lg:w-1/3 w-full h-full">
+                {/* Removed Game Mode Selection Dropdown from here */}
+
+                {/* Action Buttons (Reset and Undo) */}
+                <div className="mb-6 w-full flex flex-wrap justify-center gap-3">
+                  <button
+                    onClick={resetGame}
+                    className="px-6 py-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-base rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50"
+                  >
+                    Alle Karten zurücksetzen
+                  </button>
+                  <button
+                    onClick={undoLastTrick}
+                    disabled={trickHistory.length === 0}
+                    className={`
+                      px-6 py-2 font-bold text-base rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4
+                      ${trickHistory.length === 0
+                        ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                        : 'bg-yellow-500 hover:bg-yellow-600 active:bg-yellow-700 text-gray-900 focus:ring-yellow-400 focus:ring-opacity-50'
+                      }
+                    `}
+                  >
+                    Rückgängig
+                  </button>
+                </div>
+
+                {/* Player/Team Selection and Scores Display */}
+                <div className="mb-6 w-full bg-gray-700 bg-opacity-50 rounded-xl shadow-inner p-3">
+                  <h2 className="text-lg sm:text-xl font-semibold mb-2 text-purple-300 text-center">
+                    Punktestände (Verbleibende Punkte: {remainingPoints})
+                  </h2>
+
+                  {/* Rufspiel Team Selection UI */}
+                  {(selectedMode === 'Auf die Alte' || selectedMode === 'Auf die Blaue' || selectedMode === 'Auf die Schellen') && (
+                    <div className="mb-4">
+                      <h3 className="text-base font-semibold mb-1 text-white text-center">Team für Rufspiel auswählen (2 Spieler):</h3>
+                      <div className="flex flex-wrap justify-center gap-2">
+                        {[0, 1, 2, 3].map(index => (
+                          <button
+                            key={`select-rufspiel-${index}`}
+                            onClick={() => handleRufspielTeamSelection(index)}
+                            className={`
+                              px-3 py-1 rounded-full font-medium text-sm transition duration-200 ease-in-out
+                              ${rufspielTeam.includes(index)
+                                ? `${playerColors[index]} ${playerTextColors[index]} shadow-md border-2 border-white`
+                                : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                              }
+                            `}
+                          >
+                            Spieler {index + 1}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Wenz/Solo Player Selection UI */}
+                  {(selectedMode === 'Wenz' || selectedMode.endsWith('solo')) && (
+                    <div className="mb-4">
+                      <h3 className="text-base font-semibold mb-1 text-white text-center">Alleinspieler auswählen:</h3>
+                      <div className="flex flex-wrap justify-center gap-2">
+                        {[0, 1, 2, 3].map(index => (
+                          <button
+                            key={index}
+                            onClick={() => handleSoloPlayerSelection(index)}
+                            className={`
+                              px-3 py-1 rounded-full font-medium text-sm transition duration-200 ease-in-out
+                              ${soloPlayerIndex === index
+                                ? `${playerColors[index]} ${playerTextColors[index]} shadow-md border-2 border-white`
+                                : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                              }
+                            `}
+                          >
+                            Spieler {index + 1}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Conditional Score Display */}
+                  {(selectedMode === 'Auf die Alte' || selectedMode === 'Auf die Blaue' || selectedMode === 'Auf die Schellen') && rufspielTeam.length === 2 ? (
+                    // Rufspiel Team Scores
+                    <div className="grid grid-cols-2 gap-3 text-center">
+                      <div className={`rounded-lg p-2 shadow-md bg-gradient-to-r from-${playerTailwindColors[rufspielTeam[0]]} to-${playerTailwindColors[rufspielTeam[1]]} text-white`}>
+                        <p className="text-base font-medium">Team 1 (Ruf)</p>
+                        <p className="text-2xl font-bold">
+                          {playerScores[rufspielTeam[0]] + playerScores[rufspielTeam[1]]}
+                          {isTeam1Winning && <span className="ml-2">🏆</span>}
+                        </p>
+                      </div>
+                      <div className={`rounded-lg p-2 shadow-md bg-gradient-to-r
+                          ${rufspielTeam.includes(0) && rufspielTeam.includes(1) ? `from-${playerTailwindColors[2]} to-${playerTailwindColors[3]}` :
+                            rufspielTeam.includes(0) && rufspielTeam.includes(2) ? `from-${playerTailwindColors[1]} to-${playerTailwindColors[3]}` :
+                            rufspielTeam.includes(0) && rufspielTeam.includes(3) ? `from-${playerTailwindColors[1]} to-${playerTailwindColors[2]}` :
+                            rufspielTeam.includes(1) && rufspielTeam.includes(2) ? `from-${playerTailwindColors[0]} to-${playerTailwindColors[3]}` :
+                            rufspielTeam.includes(1) && rufspielTeam.includes(3) ? `from-${playerTailwindColors[0]} to-${playerTailwindColors[2]}` :
+                            rufspielTeam.includes(2) && rufspielTeam.includes(3) ? `from-${playerTailwindColors[0]} to-${playerTailwindColors[1]}` : ''
+                          } text-white`}>
+                        <p className="text-base font-medium">Team 2 (Gegner)</p>
+                        <p className="text-2xl font-bold">
+                          {playerScores.filter((_, idx) => !rufspielTeam.includes(idx)).reduce((sum, score) => sum + score, 0)}
+                          {isTeam2Winning && <span className="ml-2">🏆</span>}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (selectedMode === 'Wenz' || selectedMode.endsWith('solo')) && soloPlayerIndex !== null ? (
+                    // Wenz/Solo Player Scores
+                    <div className="grid grid-cols-2 gap-3 text-center">
+                      <div className={`${playerColors[soloPlayerIndex]} rounded-lg p-2 shadow-md ${playerTextColors[soloPlayerIndex]}`}>
+                        <p className="text-base font-medium">Alleinspieler {soloPlayerIndex + 1}</p>
+                        <p className="text-2xl font-bold">
+                          {playerScores[soloPlayerIndex]}
+                          {isSoloPlayerWinning && <span className="ml-2">🏆</span>}
+                        </p>
+                      </div>
+                      <div className={`rounded-lg p-2 shadow-md ${getOpponentGradient(soloPlayerIndex)} text-white`}>
+                        <p className="text-base font-medium">Gegner</p>
+                        <p className="text-2xl font-bold">
+                          {playerScores.filter((_, idx) => idx !== soloPlayerIndex).reduce((sum, score) => sum + score, 0)}
+                          {isOpponentTeamWinning && <span className="ml-2">🏆</span>}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    // Individual Player Scores (Default)
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                      {playerScores.map((score, index) => (
+                        <div key={index} className={`${playerColors[index]} rounded-lg p-2 shadow-md ${playerTextColors[index]}`}>
+                          <p className="text-base font-medium">Spieler {index + 1}</p>
+                          <p className="text-2xl font-bold">{score}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="w-full bg-gray-800 bg-opacity-70 rounded-xl shadow-2xl p-4 sm:p-6 flex flex-col gap-6 overflow-y-auto flex-grow">
+                  {/* Trumps Section */}
+                  <div className="bg-gray-700 bg-opacity-50 p-3 rounded-lg shadow-inner">
+                    <h2 className="text-xl sm:text-2xl font-semibold mb-3 text-orange-300">Trümpfe</h2>
+                    
+                    {/* Ober Trumps (if applicable) */}
+                    {selectedMode !== 'Wenz' && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-2 mb-3">
+                        {categorizedCards.trumps.filter(card => card.rank === 'Ober').map(card => (
+                          <Card
+                            key={card.name}
+                            card={card}
+                            onClick={handleCardClick}
+                            isSelectedForTrick={currentTrickCards.some(tc => tc.name === card.name)}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Unter Trumps */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-2 mb-3">
+                      {categorizedCards.trumps.filter(card => card.rank === 'Unter').map(card => (
+                          <Card
+                            key={card.name}
+                            card={card}
+                            onClick={handleCardClick}
+                            isSelectedForTrick={currentTrickCards.some(tc => tc.name === card.name)}
+                          />
+                      ))}
+                    </div>
+
+                    {/* Herz Trumps or Solo Trump Suit */}
+                    {(selectedMode === 'Auf die Alte' || selectedMode === 'Auf die Blaue' || selectedMode === 'Auf die Schellen' || selectedMode === 'Herzsolo') ? (
+                      <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 ${suitGridColsClass} gap-2`}>
+                        {categorizedCards.trumps.filter(card => card.suit === 'Herz' && card.rank !== 'Ober' && card.rank !== 'Unter').map(card => (
+                          <Card
+                            key={card.name}
+                            card={card}
+                            onClick={handleCardClick}
+                            isSelectedForTrick={currentTrickCards.some(tc => tc.name === card.name)}
+                          />
+                        ))}
+                      </div>
+                    ) : (selectedMode === 'Eichelsolo' && categorizedCards.trumps.filter(card => card.suit === 'Eichel' && card.rank !== 'Ober' && card.rank !== 'Unter').length > 0) ? (
+                      <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 ${suitGridColsClass} gap-2`}>
+                        {categorizedCards.trumps.filter(card => card.suit === 'Eichel' && card.rank !== 'Ober' && card.rank !== 'Unter').map(card => (
+                          <Card
+                            key={card.name}
+                            card={card}
+                            onClick={handleCardClick}
+                            isSelectedForTrick={currentTrickCards.some(tc => tc.name === card.name)}
+                          />
+                        ))}
+                      </div>
+                    ) : (selectedMode === 'Grassolo' && categorizedCards.trumps.filter(card => card.suit === 'Gras' && card.rank !== 'Ober' && card.rank !== 'Unter').length > 0) ? (
+                      <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 ${suitGridColsClass} gap-2`}>
+                        {categorizedCards.trumps.filter(card => card.suit === 'Gras' && card.rank !== 'Ober' && card.rank !== 'Unter').map(card => (
+                          <Card
+                            key={card.name}
+                            card={card}
+                            onClick={handleCardClick}
+                            isSelectedForTrick={currentTrickCards.some(tc => tc.name === card.name)}
+                          />
+                        ))}
+                      </div>
+                    ) : (selectedMode === 'Schellensolo' && categorizedCards.trumps.filter(card => card.suit === 'Schellen' && card.rank !== 'Ober' && card.rank !== 'Unter').length > 0) ? (
+                      <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 ${suitGridColsClass} gap-2`}>
+                        {categorizedCards.trumps.filter(card => card.suit === 'Schellen' && card.rank !== 'Ober' && card.rank !== 'Unter').map(card => (
+                          <Card
+                            key={card.name}
+                            card={card}
+                            onClick={handleCardClick}
+                            isSelectedForTrick={currentTrickCards.some(tc => tc.name === card.name)}
+                          />
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {/* Suits Section - Eichel */}
+                  {categorizedCards.eichelCards.length > 0 && (
+                    <div className="bg-gray-700 bg-opacity-50 p-3 rounded-lg shadow-inner">
+                      <h2 className="text-xl sm:text-2xl font-semibold mb-3 text-green-300">Eichel</h2>
+                      <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 ${suitGridColsClass} gap-2`}>
+                        {categorizedCards.eichelCards.map(card => (
+                          <Card
+                            key={card.name}
+                            card={card}
+                            onClick={handleCardClick}
+                            isSelectedForTrick={currentTrickCards.some(tc => tc.name === card.name)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Suits Section - Gras */}
+                  {categorizedCards.grasCards.length > 0 && (
+                    <div className="bg-gray-700 bg-opacity-50 p-3 rounded-lg shadow-inner">
+                      <h2 className="text-xl sm:text-2xl font-semibold mb-3 text-green-300">Gras</h2>
+                      <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 ${suitGridColsClass} gap-2`}>
+                        {categorizedCards.grasCards.map(card => (
+                          <Card
+                            key={card.name}
+                            card={card}
+                            onClick={handleCardClick}
+                            isSelectedForTrick={currentTrickCards.some(tc => tc.name === card.name)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Suits Section - Herz (only if it's a suit in the current mode) */}
+                  {categorizedCards.herzCards.length > 0 && (
+                    <div className="bg-gray-700 bg-opacity-50 p-3 rounded-lg shadow-inner">
+                      <h2 className="text-xl sm:text-2xl font-semibold mb-3 text-green-300">Herz</h2>
+                      <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 ${suitGridColsClass} gap-2`}>
+                        {categorizedCards.herzCards.map(card => (
+                          <Card
+                            key={card.name}
+                            card={card}
+                            onClick={handleCardClick}
+                            isSelectedForTrick={currentTrickCards.some(tc => tc.name === card.name)}
+                          />
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Suits Section - Schellen */}
+                  {categorizedCards.schellenCards.length > 0 && (
+                    <div className="bg-gray-700 bg-opacity-50 p-3 rounded-lg shadow-inner">
+                      <h2 className="text-xl sm:text-2xl font-semibold mb-3 text-green-300">Schellen</h2>
+                      <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 ${suitGridColsClass} gap-2`}>
+                        {categorizedCards.schellenCards.map(card => (
+                          <Card
+                            key={card.name}
+                            card={card}
+                            onClick={handleCardClick}
+                            isSelectedForTrick={currentTrickCards.some(tc => tc.name === card.name)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Trick Assignment Dialog */}
+              {showTrickDialog && (
+                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-2">
+                  <div className="bg-gray-800 rounded-xl shadow-2xl p-4 sm:p-6 text-white text-center max-w-md w-full">
+                    <h3 className="text-xl font-bold mb-3">Stich zuweisen</h3>
+                    <p className="mb-3">Wähle den Spieler, der den Stich gewonnen hat:</p>
+                    <div className="flex flex-wrap justify-center gap-2 mb-4">
+                      {currentTrickCards.map(card => (
+                        <Card
+                          key={card.name}
+                          card={card}
+                          onClick={() => {}} // No click functionality in dialog
+                          isSelectedForTrick={true} // Always selected in dialog
+                        />
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[0, 1, 2, 3].map(playerIndex => (
+                        <button
+                          key={playerIndex}
+                          onClick={() => assignTrickToPlayer(playerIndex)}
+                          className={`
+                            px-4 py-2 font-bold text-base rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4
+                            ${playerColors[playerIndex]} ${playerTextColors[playerIndex]}
+                            ${playerIndex === 0 ? 'focus:ring-red-500' :
+                              playerIndex === 1 ? 'focus:ring-yellow-400' :
+                              playerIndex === 2 ? 'focus:ring-green-500' :
+                              'focus:ring-blue-500'
+                            } focus:ring-opacity-50
+                          `}
+                        >
+                          Spieler {playerIndex + 1}
+                        </button>
+                      ))}
+                      <button
+                        onClick={cancelTrickAssignment}
+                        className="col-span-2 px-4 py-2 bg-gray-500 hover:bg-gray-600 active:bg-gray-700 text-white font-bold text-base rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-400 focus:ring-opacity-50 mt-2"
+                      >
+                        Abbrechen
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        // Card Component
+        const Card = ({ card, onClick, isSelectedForTrick }) => {
+          const [imageError, setImageError] = React.useState(false);
+
+          // Map suitKey to the actual image URL
+          const suitImageUrls = {
+              eichel: EICHEL_IMAGE_URL,
+              gras: GRAS_IMAGE_URL,
+              herz: HERZ_IMAGE_URL,
+              schellen: SCHELLEN_IMAGE_URL,
+          };
+
+          const currentImageUrl = suitImageUrls[card.suitKey];
+
+          return (
+            <div
+              onClick={() => onClick(card.name)}
+              className={`
+                p-1 sm:p-2 flex flex-row items-center justify-center text-center rounded-lg cursor-pointer
+                transition-all duration-200 ease-in-out transform
+                ${card.played
+                  ? 'bg-gray-500 text-gray-300 line-through opacity-70 shadow-inner'
+                  : isSelectedForTrick
+                    ? 'bg-blue-400 text-white shadow-lg border-2 border-blue-200'
+                    : 'bg-gray-200 text-gray-900 hover:bg-yellow-300 active:bg-yellow-400 shadow-md hover:shadow-lg'
+                }
+                select-none text-sm sm:text-base font-medium
+              `}
+            >
+              {/* Image part */}
+              {currentImageUrl && !imageError ? (
+                <img
+                  src={currentImageUrl}
+                  alt={card.suit}
+                  className="w-8 h-8 object-contain mr-1" // Adjusted margin-right instead of margin-bottom
+                  onError={() => setImageError(true)} // Set imageError to true on error
+                />
+              ) : (
+                // Fallback to suit name if image fails to load
+                <span className="text-xs text-gray-500 mr-1">{card.suit}</span>
+              )}
+              {/* Text part (card rank symbol) */}
+              <span className="font-bold">{card.rankSymbol}</span>
+            </div>
+          );
+        };
+
+        // Render the App component to the 'root' div
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
+
