@@ -1,0 +1,936 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+ <semantics>
+  <mtable>
+   <mtr>
+    <mtd>
+     <mtext>Wie hoch ist die Chance, dass der Gegner die Rufsau haut, wenn ich als Spieler suche? Wenn ich als Spieler 1 Karte der Ruffarbe habe, dann ist das Rufass beim Partner.</mtext>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mtext>Die restlichen 4 Karten sind zufällig auf die 3 weiteren Spieler am Tisch verteilt. Somit ergibt sich, die Wahrscheinlichkeit, dass ein Gegner am Tisch frei ist:</mtext>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mrow>
+      <mrow>
+       <msub>
+        <mi>P</mi>
+        <mtext>Spieler hat keine Ruffarbe</mtext>
+       </msub>
+       <mo stretchy="false">=</mo>
+       <mfrac>
+        <mrow>
+         <mrow>
+          <mo fence="true" form="prefix" stretchy="false">(</mo>
+          <mrow>
+           <mtable>
+            <mtr>
+             <mtd>
+              <mn>4</mn>
+             </mtd>
+            </mtr>
+            <mtr>
+             <mtd>
+              <mn>0</mn>
+             </mtd>
+            </mtr>
+           </mtable>
+          </mrow>
+          <mo fence="true" form="postfix" stretchy="false">)</mo>
+         </mrow>
+         <mo stretchy="false">∗</mo>
+         <mrow>
+          <mo fence="true" form="prefix" stretchy="false">(</mo>
+          <mrow>
+           <mtable>
+            <mtr>
+             <mtd>
+              <mn>19</mn>
+             </mtd>
+            </mtr>
+            <mtr>
+             <mtd>
+              <mn>8</mn>
+             </mtd>
+            </mtr>
+           </mtable>
+          </mrow>
+          <mo fence="true" form="postfix" stretchy="false">)</mo>
+         </mrow>
+        </mrow>
+        <mrow>
+         <mo fence="true" form="prefix" stretchy="false">(</mo>
+         <mrow>
+          <mtable>
+           <mtr>
+            <mtd>
+             <mn>23</mn>
+            </mtd>
+           </mtr>
+           <mtr>
+            <mtd>
+             <mn>8</mn>
+            </mtd>
+           </mtr>
+          </mtable>
+         </mrow>
+         <mo fence="true" form="postfix" stretchy="false">)</mo>
+        </mrow>
+       </mfrac>
+       <mo stretchy="false">≈</mo>
+       <mn>15,415</mn>
+      </mrow>
+      <mtext>%</mtext>
+     </mrow>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mrow>
+      <mtext>Im Zähler haben wir </mtext>
+      <mrow>
+       <mo fence="true" form="prefix" stretchy="false">(</mo>
+       <mrow>
+        <mtable>
+         <mtr>
+          <mtd>
+           <mn>4</mn>
+          </mtd>
+         </mtr>
+         <mtr>
+          <mtd>
+           <mn>0</mn>
+          </mtd>
+         </mtr>
+        </mtable>
+       </mrow>
+       <mo fence="true" form="postfix" stretchy="false">)</mo>
+      </mrow>
+      <mi>,</mi>
+      <mtext>das heißt von den 4 Eichel Karten hat der Spieler keine. Dann haben wir</mtext>
+      <mrow>
+       <mo fence="true" form="prefix" stretchy="false">(</mo>
+       <mrow>
+        <mtable>
+         <mtr>
+          <mtd>
+           <mn>19</mn>
+          </mtd>
+         </mtr>
+         <mtr>
+          <mtd>
+           <mn>8</mn>
+          </mtd>
+         </mtr>
+        </mtable>
+       </mrow>
+       <mo fence="true" form="postfix" stretchy="false">)</mo>
+      </mrow>
+      <mtext>, das heißt aus den 19 überigen Karten am Tisch, bekommt</mtext>
+     </mrow>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mrow>
+      <mtext>der Spieler zufällige 8 Karten. Die 19 ergibt sich aus unserer Sicht. Wir als Spieler haben 8 Karten, die wir kennen, somit </mtext>
+      <mrow>
+       <mrow>
+        <mn>32</mn>
+        <mo stretchy="false">−</mo>
+        <mn>8</mn>
+       </mrow>
+       <mo stretchy="false">=</mo>
+       <mn>24</mn>
+      </mrow>
+      <mtext>, und da der Gegner keine Ruffarbe hat</mtext>
+     </mrow>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mrow>
+      <mtext>und nicht das Rufass, ziehen wir nochmal 5 ab.</mtext>
+      <mrow>
+       <mrow>
+        <mn>24</mn>
+        <mo stretchy="false">−</mo>
+        <mn>4</mn>
+        <mo stretchy="false">−</mo>
+        <mn>1</mn>
+       </mrow>
+       <mo stretchy="false">=</mo>
+       <mn>19</mn>
+      </mrow>
+      <mtext>! Im Nenner haben wir dann alle möglichen Kombinationen, also aus 23 Karten werden 8 zufällige Karten</mtext>
+     </mrow>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mtext>ausgewählt. Also in ca. 15% der Fälle ist ein Gegner frei. Da aber sowohl der eine, als auch der andere Gegner frei sein kann, muss das noch verdoppelt werden. Wir müssen</mtext>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mtext>dann aber die Fälle rausrechnen, wo beide frei sind.</mtext>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mrow>
+      <mrow>
+       <msub>
+        <mi>P</mi>
+        <mtext>Beide Gegner frei</mtext>
+       </msub>
+       <mo stretchy="false">=</mo>
+       <mfrac>
+        <mrow>
+         <mrow>
+          <mo fence="true" form="prefix" stretchy="false">(</mo>
+          <mrow>
+           <mtable>
+            <mtr>
+             <mtd>
+              <mn>4</mn>
+             </mtd>
+            </mtr>
+            <mtr>
+             <mtd>
+              <mn>0</mn>
+             </mtd>
+            </mtr>
+           </mtable>
+          </mrow>
+          <mo fence="true" form="postfix" stretchy="false">)</mo>
+         </mrow>
+         <mo stretchy="false">∗</mo>
+         <mrow>
+          <mo fence="true" form="prefix" stretchy="false">(</mo>
+          <mrow>
+           <mtable>
+            <mtr>
+             <mtd>
+              <mn>19</mn>
+             </mtd>
+            </mtr>
+            <mtr>
+             <mtd>
+              <mn>8</mn>
+             </mtd>
+            </mtr>
+           </mtable>
+          </mrow>
+          <mo fence="true" form="postfix" stretchy="false">)</mo>
+         </mrow>
+        </mrow>
+        <mrow>
+         <mo fence="true" form="prefix" stretchy="false">(</mo>
+         <mrow>
+          <mtable>
+           <mtr>
+            <mtd>
+             <mn>23</mn>
+            </mtd>
+           </mtr>
+           <mtr>
+            <mtd>
+             <mn>8</mn>
+            </mtd>
+           </mtr>
+          </mtable>
+         </mrow>
+         <mo fence="true" form="postfix" stretchy="false">)</mo>
+        </mrow>
+       </mfrac>
+      </mrow>
+      <mrow>
+       <mfrac>
+        <mrow>
+         <mrow>
+          <mo fence="true" form="prefix" stretchy="false">(</mo>
+          <mrow>
+           <mtable>
+            <mtr>
+             <mtd>
+              <mn>4</mn>
+             </mtd>
+            </mtr>
+            <mtr>
+             <mtd>
+              <mn>0</mn>
+             </mtd>
+            </mtr>
+           </mtable>
+          </mrow>
+          <mo fence="true" form="postfix" stretchy="false">)</mo>
+         </mrow>
+         <mo stretchy="false">∗</mo>
+         <mrow>
+          <mo fence="true" form="prefix" stretchy="false">(</mo>
+          <mrow>
+           <mtable>
+            <mtr>
+             <mtd>
+              <mn>11</mn>
+             </mtd>
+            </mtr>
+            <mtr>
+             <mtd>
+              <mn>8</mn>
+             </mtd>
+            </mtr>
+           </mtable>
+          </mrow>
+          <mo fence="true" form="postfix" stretchy="false">)</mo>
+         </mrow>
+        </mrow>
+        <mrow>
+         <mo fence="true" form="prefix" stretchy="false">(</mo>
+         <mrow>
+          <mtable>
+           <mtr>
+            <mtd>
+             <mn>15</mn>
+            </mtd>
+           </mtr>
+           <mtr>
+            <mtd>
+             <mn>8</mn>
+            </mtd>
+           </mtr>
+          </mtable>
+         </mrow>
+         <mo fence="true" form="postfix" stretchy="false">)</mo>
+        </mrow>
+       </mfrac>
+       <mo stretchy="false">≈</mo>
+       <mn>0,395</mn>
+      </mrow>
+      <mtext>%</mtext>
+     </mrow>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mrow>
+      <mrow>
+       <mtext>Damit ergibt sich </mtext>
+       <mo stretchy="false">≈</mo>
+       <mrow>
+        <mn>2</mn>
+        <mo stretchy="false">∗</mo>
+        <mn>15,4</mn>
+       </mrow>
+      </mrow>
+      <mrow>
+       <mtext>%</mtext>
+       <mo stretchy="false">−</mo>
+       <mn>0,4</mn>
+      </mrow>
+      <mrow>
+       <mtext>%</mtext>
+       <mo stretchy="false">=</mo>
+       <mn>30,4</mn>
+      </mrow>
+      <mtext>%</mtext>
+      <mtext>in denen einer der beiden Gegner frei ist. Oder andersrum gesagt, haben wir als Spieler die Ruffarbe ein mal, ist die Chance,</mtext>
+     </mrow>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mtext>wenn wir selbst suchen, dass die Farbe durchgeht nicht ganz 70%. Andersrum sieht das aber anders aus. Wenn der Gegner mit 1 der Farbe sucht.</mtext>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mrow>
+      <mrow>
+       <msub>
+        <mi>P</mi>
+        <mtext>Partner hat keine Ruffarbe</mtext>
+       </msub>
+       <mo stretchy="false">=</mo>
+       <mfrac>
+        <mrow>
+         <mrow>
+          <mo fence="true" form="prefix" stretchy="false">(</mo>
+          <mrow>
+           <mtable>
+            <mtr>
+             <mtd>
+              <mn>3</mn>
+             </mtd>
+            </mtr>
+            <mtr>
+             <mtd>
+              <mn>0</mn>
+             </mtd>
+            </mtr>
+           </mtable>
+          </mrow>
+          <mo fence="true" form="postfix" stretchy="false">)</mo>
+         </mrow>
+         <mo stretchy="false">∗</mo>
+         <mrow>
+          <mo fence="true" form="prefix" stretchy="false">(</mo>
+          <mrow>
+           <mtable>
+            <mtr>
+             <mtd>
+              <mn>19</mn>
+             </mtd>
+            </mtr>
+            <mtr>
+             <mtd>
+              <mn>8</mn>
+             </mtd>
+            </mtr>
+           </mtable>
+          </mrow>
+          <mo fence="true" form="postfix" stretchy="false">)</mo>
+         </mrow>
+        </mrow>
+        <mrow>
+         <mo fence="true" form="prefix" stretchy="false">(</mo>
+         <mrow>
+          <mtable>
+           <mtr>
+            <mtd>
+             <mn>22</mn>
+            </mtd>
+           </mtr>
+           <mtr>
+            <mtd>
+             <mn>8</mn>
+            </mtd>
+           </mtr>
+          </mtable>
+         </mrow>
+         <mo fence="true" form="postfix" stretchy="false">)</mo>
+        </mrow>
+       </mfrac>
+       <mo stretchy="false">≈</mo>
+       <mn>23,636</mn>
+      </mrow>
+      <mtext>%</mtext>
+     </mrow>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mrow>
+      <mtext>Also wenn wir grob überschlagen, geht in 3 von 4 Fällen die Rufsau durch, wenn der Gegner sucht! Wenn wir suchen aber nur in 7 von 10 Fällen. Da</mtext>
+      <mrow>
+       <mfrac>
+        <mn>3</mn>
+        <mn>4</mn>
+       </mfrac>
+       <mo stretchy="false">&gt;</mo>
+       <mfrac>
+        <mn>7</mn>
+        <mn>10</mn>
+       </mfrac>
+      </mrow>
+      <mtext>sagt man auch</mtext>
+     </mrow>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mtext>- der Depp sucht selbst - weil ich ein höheres Risiko habe, dass das Rufass gehauen wird, wenn ich selbst suche! Wenn man aber ehrlich ist, ist der Abstand überschaubar,</mtext>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mtext>wobei man sagen muss, dass bei einem realistischen Rufspiel der Spieler selbst wenige Karten, oft nur 1 Karte der Ruffarbe hat. Wenn man dies mit einbezieht, dann könnte</mtext>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mtext>man noch berechnen, wie hoch die Chance ist, wenn der Spieler nur eine Karte der Ruffarbe hat. Die 8 Karten des Spielers sind damit fixiert, das Rufass beim Mitspieler</mtext>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mtext>ebenfalls. Bleibt zu errechnen wie die Wahrscheinlichkeit ist, dass der Partner des Gegenspielers frei ist.</mtext>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mrow>
+      <msub>
+       <mi>P</mi>
+       <mtext>Partner sticht Rufass, wenn ich mit n der Ruffarbe suche und Spieler s hat</mtext>
+      </msub>
+      <mo stretchy="false">=</mo>
+      <mfrac>
+       <mrow>
+        <mo fence="true" form="prefix" stretchy="false">(</mo>
+        <mrow>
+         <mtable>
+          <mtr>
+           <mtd>
+            <mrow>
+             <mn>10</mn>
+             <mo stretchy="false">+</mo>
+             <mi>s</mi>
+             <mo stretchy="false">+</mo>
+             <mi>n</mi>
+            </mrow>
+           </mtd>
+          </mtr>
+          <mtr>
+           <mtd>
+            <mrow>
+             <mn>2</mn>
+             <mo stretchy="false">+</mo>
+             <mi>s</mi>
+             <mo stretchy="false">+</mo>
+             <mi>n</mi>
+            </mrow>
+           </mtd>
+          </mtr>
+         </mtable>
+        </mrow>
+        <mo fence="true" form="postfix" stretchy="false">)</mo>
+       </mrow>
+       <mrow>
+        <mo fence="true" form="prefix" stretchy="false">(</mo>
+        <mrow>
+         <mtable>
+          <mtr>
+           <mtd>
+            <mn>15</mn>
+           </mtd>
+          </mtr>
+          <mtr>
+           <mtd>
+            <mn>7</mn>
+           </mtd>
+          </mtr>
+         </mtable>
+        </mrow>
+        <mo fence="true" form="postfix" stretchy="false">)</mo>
+       </mrow>
+      </mfrac>
+     </mrow>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mtext>Fangen wir mit dem Nenner an. Insgesamt gibt es 32 Karten, 8 entfallen auf den suchenden Spieler, 8 auf den Spieler, 1 Rufass auf den Mitspieler, also bleiben 15 Karten</mtext>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mtext>für den Partner in der Gegenspielerpartei. 7 Karten davon sind frei, die 8te Karte muss ein Trumpf sein, sonst kann er nicht stechen. Damit der Partner stechen kann,</mtext>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mrow>
+      <mtext>müssen die restlichen Farbkarten beim Mitspieler liegen, also 6-1-s-n. Die restlichen Karten des Mitspielers sind dann</mtext>
+      <mrow>
+       <mn>7</mn>
+       <mo stretchy="false">−</mo>
+       <mrow>
+        <mo fence="true" form="prefix" stretchy="false">(</mo>
+        <mrow>
+         <mrow>
+          <mn>5</mn>
+          <mo stretchy="false">−</mo>
+          <mi>s</mi>
+          <mo stretchy="false">−</mo>
+          <mi>n</mi>
+         </mrow>
+        </mrow>
+        <mo fence="true" form="postfix" stretchy="false">)</mo>
+       </mrow>
+      </mrow>
+      <mtext>damit </mtext>
+      <mrow>
+       <mn>2</mn>
+       <mo stretchy="false">+</mo>
+       <mi>s</mi>
+       <mo stretchy="false">+</mo>
+       <mi>n</mi>
+      </mrow>
+      <mtext>günstige Verteilungen</mtext>
+     </mrow>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mrow>
+      <mtext>und damit mögliche Kartenverteilungen:</mtext>
+      <mrow>
+       <mrow>
+        <mn>15</mn>
+        <mo stretchy="false">−</mo>
+        <mrow>
+         <mo fence="true" form="prefix" stretchy="false">(</mo>
+         <mrow>
+          <mrow>
+           <mn>5</mn>
+           <mo stretchy="false">−</mo>
+           <mi>s</mi>
+           <mo stretchy="false">−</mo>
+           <mi>n</mi>
+          </mrow>
+         </mrow>
+         <mo fence="true" form="postfix" stretchy="false">)</mo>
+        </mrow>
+       </mrow>
+       <mo stretchy="false">=</mo>
+       <mrow>
+        <mn>10</mn>
+        <mo stretchy="false">+</mo>
+        <mi>s</mi>
+        <mo stretchy="false">+</mo>
+        <mi>n</mi>
+       </mrow>
+      </mrow>
+      <mi>.</mi>
+      <mtext>Für s(Karten beim Spieler) und n(Karten beim Suchenden) ergibt sich:</mtext>
+     </mrow>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mrow>
+      <mi>P</mi>
+      <mrow>
+       <mrow>
+        <mo fence="true" form="prefix" stretchy="false">(</mo>
+        <mrow>
+         <mrow>
+          <mrow>
+           <mi>n</mi>
+           <mo stretchy="false">=</mo>
+           <mn>1</mn>
+          </mrow>
+          <mi>,</mi>
+          <mrow>
+           <mi>s</mi>
+           <mo stretchy="false">=</mo>
+           <mn>1</mn>
+          </mrow>
+         </mrow>
+        </mrow>
+        <mo fence="true" form="postfix" stretchy="false">)</mo>
+       </mrow>
+       <mo stretchy="false">=</mo>
+       <mfrac>
+        <mrow>
+         <mo fence="true" form="prefix" stretchy="false">(</mo>
+         <mrow>
+          <mtable>
+           <mtr>
+            <mtd>
+             <mn>12</mn>
+            </mtd>
+           </mtr>
+           <mtr>
+            <mtd>
+             <mn>4</mn>
+            </mtd>
+           </mtr>
+          </mtable>
+         </mrow>
+         <mo fence="true" form="postfix" stretchy="false">)</mo>
+        </mrow>
+        <mrow>
+         <mo fence="true" form="prefix" stretchy="false">(</mo>
+         <mrow>
+          <mtable>
+           <mtr>
+            <mtd>
+             <mn>15</mn>
+            </mtd>
+           </mtr>
+           <mtr>
+            <mtd>
+             <mn>7</mn>
+            </mtd>
+           </mtr>
+          </mtable>
+         </mrow>
+         <mo fence="true" form="postfix" stretchy="false">)</mo>
+        </mrow>
+       </mfrac>
+       <mo stretchy="false">≈</mo>
+       <mn>7,692</mn>
+      </mrow>
+      <mtext>%</mtext>
+     </mrow>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mrow>
+      <mi>P</mi>
+      <mrow>
+       <mrow>
+        <mo fence="true" form="prefix" stretchy="false">(</mo>
+        <mrow>
+         <mrow>
+          <mrow>
+           <mi>n</mi>
+           <mo stretchy="false">=</mo>
+           <mn>2</mn>
+          </mrow>
+          <mi>,</mi>
+          <mrow>
+           <mi>s</mi>
+           <mo stretchy="false">=</mo>
+           <mn>1</mn>
+          </mrow>
+         </mrow>
+        </mrow>
+        <mo fence="true" form="postfix" stretchy="false">)</mo>
+       </mrow>
+       <mo stretchy="false">=</mo>
+       <mfrac>
+        <mrow>
+         <mo fence="true" form="prefix" stretchy="false">(</mo>
+         <mrow>
+          <mtable>
+           <mtr>
+            <mtd>
+             <mn>13</mn>
+            </mtd>
+           </mtr>
+           <mtr>
+            <mtd>
+             <mn>5</mn>
+            </mtd>
+           </mtr>
+          </mtable>
+         </mrow>
+         <mo fence="true" form="postfix" stretchy="false">)</mo>
+        </mrow>
+        <mrow>
+         <mo fence="true" form="prefix" stretchy="false">(</mo>
+         <mrow>
+          <mtable>
+           <mtr>
+            <mtd>
+             <mn>15</mn>
+            </mtd>
+           </mtr>
+           <mtr>
+            <mtd>
+             <mn>7</mn>
+            </mtd>
+           </mtr>
+          </mtable>
+         </mrow>
+         <mo fence="true" form="postfix" stretchy="false">)</mo>
+        </mrow>
+       </mfrac>
+       <mo stretchy="false">=</mo>
+       <mn>20</mn>
+      </mrow>
+      <mtext>%</mtext>
+     </mrow>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mrow>
+      <mi>P</mi>
+      <mrow>
+       <mrow>
+        <mo fence="true" form="prefix" stretchy="false">(</mo>
+        <mrow>
+         <mrow>
+          <mrow>
+           <mi>n</mi>
+           <mo stretchy="false">=</mo>
+           <mn>3</mn>
+          </mrow>
+          <mi>,</mi>
+          <mrow>
+           <mi>s</mi>
+           <mo stretchy="false">=</mo>
+           <mn>1</mn>
+          </mrow>
+         </mrow>
+        </mrow>
+        <mo fence="true" form="postfix" stretchy="false">)</mo>
+       </mrow>
+       <mo stretchy="false">=</mo>
+       <mfrac>
+        <mrow>
+         <mo fence="true" form="prefix" stretchy="false">(</mo>
+         <mrow>
+          <mtable>
+           <mtr>
+            <mtd>
+             <mn>14</mn>
+            </mtd>
+           </mtr>
+           <mtr>
+            <mtd>
+             <mn>6</mn>
+            </mtd>
+           </mtr>
+          </mtable>
+         </mrow>
+         <mo fence="true" form="postfix" stretchy="false">)</mo>
+        </mrow>
+        <mrow>
+         <mo fence="true" form="prefix" stretchy="false">(</mo>
+         <mrow>
+          <mtable>
+           <mtr>
+            <mtd>
+             <mn>15</mn>
+            </mtd>
+           </mtr>
+           <mtr>
+            <mtd>
+             <mn>7</mn>
+            </mtd>
+           </mtr>
+          </mtable>
+         </mrow>
+         <mo fence="true" form="postfix" stretchy="false">)</mo>
+        </mrow>
+       </mfrac>
+       <mo stretchy="false">≈</mo>
+       <mn>46,667</mn>
+      </mrow>
+      <mtext>%</mtext>
+     </mrow>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mrow>
+      <mi>P</mi>
+      <mrow>
+       <mrow>
+        <mo fence="true" form="prefix" stretchy="false">(</mo>
+        <mrow>
+         <mrow>
+          <mrow>
+           <mi>n</mi>
+           <mo stretchy="false">=</mo>
+           <mn>4</mn>
+          </mrow>
+          <mi>,</mi>
+          <mrow>
+           <mi>s</mi>
+           <mo stretchy="false">=</mo>
+           <mn>1</mn>
+          </mrow>
+         </mrow>
+        </mrow>
+        <mo fence="true" form="postfix" stretchy="false">)</mo>
+       </mrow>
+       <mo stretchy="false">=</mo>
+       <mfrac>
+        <mrow>
+         <mo fence="true" form="prefix" stretchy="false">(</mo>
+         <mrow>
+          <mtable>
+           <mtr>
+            <mtd>
+             <mn>15</mn>
+            </mtd>
+           </mtr>
+           <mtr>
+            <mtd>
+             <mn>7</mn>
+            </mtd>
+           </mtr>
+          </mtable>
+         </mrow>
+         <mo fence="true" form="postfix" stretchy="false">)</mo>
+        </mrow>
+        <mrow>
+         <mo fence="true" form="prefix" stretchy="false">(</mo>
+         <mrow>
+          <mtable>
+           <mtr>
+            <mtd>
+             <mn>15</mn>
+            </mtd>
+           </mtr>
+           <mtr>
+            <mtd>
+             <mn>7</mn>
+            </mtd>
+           </mtr>
+          </mtable>
+         </mrow>
+         <mo fence="true" form="postfix" stretchy="false">)</mo>
+        </mrow>
+       </mfrac>
+       <mo stretchy="false">=</mo>
+       <mn>100</mn>
+      </mrow>
+      <mtext>%</mtext>
+     </mrow>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mtext>Da man s und n nur summiert ergibt sich für die Fälle wo der Spieler 2 der Farbe hat ebenfalls die unteren 3 Wahrscheinlichkeiten, je nachdem wie viele der Suchende</mtext>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mtext>hält ebenso für den Fall wo der Spieler 3 davon hat. Interessant ist aber sicher, dass selbst wenn man 3 von der Farbe als Suchender hat, die Chance immer noch &lt; 50% ist,</mtext>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mtext>dass das Ass gehauen wird, wenn der Spieler nur eine Karte der Ruffarbe hat. Vergleichen wir jetzt die 7,69% (Gegner sucht mit einer Karte der Farbe) mit den 30,4% </mtext>
+    </mtd>
+   </mtr>
+   <mtr>
+    <mtd>
+     <mtext>
+(Spieler suche mit einer Karte der Farbe, dann sollte man sich gut überlegen, ob man selbst sucht! Da die Chance, dass das Ass gehauen wird fast 4x so hoch ist!</mtext>
+    </mtd>
+   </mtr>
+  </mtable>
+  <annotation encoding="StarMath 5.0">&quot;Wie hoch ist die Chance, dass der Gegner die Rufsau haut, wenn ich als Spieler suche? Wenn ich als Spieler 1 Karte der Ruffarbe habe, dann ist das Rufass beim Partner.&quot; newline
+&quot;Die restlichen 4 Karten sind zufällig auf die 3 weiteren Spieler am Tisch verteilt. Somit ergibt sich, die Wahrscheinlichkeit, dass ein Gegner am Tisch frei ist:&quot; newline
+P sub {&quot;Spieler hat keine Ruffarbe&quot;} = frac{{(binom{4}{0})*(binom{19}{8}) }}{(binom{23}{8})} approx 15,415%  newline
+&quot;Im Zähler haben wir &quot; (binom{4}{0}), &quot;das heißt von den 4 Eichel Karten hat der Spieler keine. Dann haben wir&quot; (binom{19}{8})&quot;, das heißt aus den 19 überigen Karten am Tisch, bekommt&quot; newline
+&quot;der Spieler zufällige 8 Karten. Die 19 ergibt sich aus unserer Sicht. Wir als Spieler haben 8 Karten, die wir kennen, somit &quot; 32-8=24 &quot;, und da der Gegner keine Ruffarbe hat&quot; newline
+&quot;und nicht das Rufass, ziehen wir nochmal 5 ab.&quot; 24-4-1 = 19 &quot;! Im Nenner haben wir dann alle möglichen Kombinationen, also aus 23 Karten werden 8 zufällige Karten&quot; newline
+&quot;ausgewählt. Also in ca. 15% der Fälle ist ein Gegner frei. Da aber sowohl der eine, als auch der andere Gegner frei sein kann, muss das noch verdoppelt werden. Wir müssen&quot;newline
+&quot;dann aber die Fälle rausrechnen, wo beide frei sind.&quot;newline
+P sub {&quot;Beide Gegner frei&quot;} = frac{{(binom{4}{0})*(binom{19}{8}) }}{(binom{23}{8})} frac{{(binom{4}{0})*(binom{11}{8}) }}{(binom{15}{8})} approx 0,395% newline
+&quot;Damit ergibt sich &quot; approx 2*15,4% - 0,4% = 30,4% &quot;in denen einer der beiden Gegner frei ist. Oder andersrum gesagt, haben wir als Spieler die Ruffarbe ein mal, ist die Chance,&quot; newline &quot;wenn wir selbst suchen, dass die Farbe durchgeht nicht ganz 70%. Andersrum sieht das aber anders aus. Wenn der Gegner mit 1 der Farbe sucht.&quot; newline
+P sub {&quot;Partner hat keine Ruffarbe&quot;} = frac{{(binom{3}{0})*(binom{19}{8})}}{(binom{22}{8})} approx 23,636% newline
+&quot;Also wenn wir grob überschlagen, geht in 3 von 4 Fällen die Rufsau durch, wenn der Gegner sucht! Wenn wir suchen aber nur in 7 von 10 Fällen. Da&quot; frac{3}{4}&gt; frac{7}{10} &quot;sagt man auch&quot;newline
+&quot;- der Depp sucht selbst - weil ich ein höheres Risiko habe, dass das Rufass gehauen wird, wenn ich selbst suche! Wenn man aber ehrlich ist, ist der Abstand überschaubar,&quot;newline
+&quot;wobei man sagen muss, dass bei einem realistischen Rufspiel der Spieler selbst wenige Karten, oft nur 1 Karte der Ruffarbe hat. Wenn man dies mit einbezieht, dann könnte&quot; newline
+&quot;man noch berechnen, wie hoch die Chance ist, wenn der Spieler nur eine Karte der Ruffarbe hat. Die 8 Karten des Spielers sind damit fixiert, das Rufass beim Mitspieler&quot; newline
+&quot;ebenfalls. Bleibt zu errechnen wie die Wahrscheinlichkeit ist, dass der Partner des Gegenspielers frei ist.&quot; newline
+P sub {&quot;Partner sticht Rufass, wenn ich mit n der Ruffarbe suche und Spieler s hat&quot;} = frac{(binom{10+s+n}{2+s+n})}{(binom{15}{7})} newline
+&quot;Fangen wir mit dem Nenner an. Insgesamt gibt es 32 Karten, 8 entfallen auf den suchenden Spieler, 8 auf den Spieler, 1 Rufass auf den Mitspieler, also bleiben 15 Karten&quot;newline
+&quot;für den Partner in der Gegenspielerpartei. 7 Karten davon sind frei, die 8te Karte muss ein Trumpf sein, sonst kann er nicht stechen. Damit der Partner stechen kann,&quot;newline
+&quot;müssen die restlichen Farbkarten beim Mitspieler liegen, also 6-1-s-n. Die restlichen Karten des Mitspielers sind dann&quot; 7-(5-s-n) &quot;damit &quot; 2+s+n &quot;günstige Verteilungen&quot; newline&quot;und damit mögliche Kartenverteilungen:&quot; 15-(5-s-n) = 10+s+n. &quot;Für s(Karten beim Spieler) und n(Karten beim Suchenden) ergibt sich:&quot;newline
+P(n=1,s=1) = frac{(binom{12}{4})}{(binom{15}{7})} approx 7,692% newline
+P(n=2,s=1) = frac{(binom{13}{5})}{(binom{15}{7})} = 20% newline
+P(n=3,s=1) = frac{(binom{14}{6})}{(binom{15}{7})} approx 46,667% newline
+P(n=4,s=1) = frac{(binom{15}{7})}{(binom{15}{7})} = 100% newline
+&quot;Da man s und n nur summiert ergibt sich für die Fälle wo der Spieler 2 der Farbe hat ebenfalls die unteren 3 Wahrscheinlichkeiten, je nachdem wie viele der Suchende&quot;newline
+&quot;hält ebenso für den Fall wo der Spieler 3 davon hat. Interessant ist aber sicher, dass selbst wenn man 3 von der Farbe als Suchender hat, die Chance immer noch &lt; 50% ist,&quot;newline
+&quot;dass das Ass gehauen wird, wenn der Spieler nur eine Karte der Ruffarbe hat. Vergleichen wir jetzt die 7,69% (Gegner sucht mit einer Karte der Farbe) mit den 30,4% &quot;newline&quot;
+(Spieler suche mit einer Karte der Farbe, dann sollte man sich gut überlegen, ob man selbst sucht! Da die Chance, dass das Ass gehauen wird fast 4x so hoch ist!&quot;</annotation>
+ </semantics>
+</math>
